@@ -1,0 +1,48 @@
+[package]
+name = "archivum"
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+authors = ["Ankit Chaubey"]
+description = "Archivum — deterministic, split, human-readable archive system with faithful restore"
+repository = "https://github.com/ankit-chaubey/archivum"
+keywords = ["backup", "archive", "tar", "restore", "forensics"]
+categories = ["filesystem", "command-line-utilities"]
+
+# =========================
+# BINARY
+# =========================
+[[bin]]
+name = "archivum"
+path = "src/main.rs"
+
+# =========================
+# DEPENDENCIES
+# =========================
+[dependencies]
+
+# TAR handling
+tar = "0.4"
+
+# Directory traversal
+walkdir = "2.5"
+
+# Serialization for index.arc
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Date / time helpers (unix timestamps)
+time = { version = "0.3", features = ["formatting"] }
+
+# Human-readable sizes (optional, can remove later)
+humansize = "2.1"
+
+# =========================
+# RELEASE OPTIMIZATION
+# =========================
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
