@@ -12,8 +12,7 @@ use std::thread;
 use crate::index::ArchivumIndex;
 use crate::scan::EntryType;
 
-/// Compute SHA-256 for all file entries and store in index
-pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, threads: usize) -> Result<()> {
+pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, num_threads: usize) -> Result<()> {
     let total: u64 = idx
         .entries
         .iter()
@@ -27,7 +26,7 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, threads: usize) -
             "  {spinner:.cyan} Checksums  [{bar:40.cyan/blue}] {bytes}/{total_bytes}  {elapsed}",
         )
         .unwrap()
-        .progress_chars("█▉▊▋▌▍▎▏ "),
+        .progress_chars("ââââââââ "),
     );
 
     let work: Vec<(usize, std::path::PathBuf, u64)> = idx
@@ -38,16 +37,15 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, threads: usize) -
         .map(|(i, e)| (i, root.join(&e.path), e.size))
         .collect();
 
-    let threads = threads.max(1);
     let pb_arc = Arc::new(pb);
     let results: Arc<Mutex<Vec<(usize, String)>>> = Arc::new(Mutex::new(Vec::new()));
     let work_arc = Arc::new(Mutex::new(work.into_iter()));
 
     let mut handles = vec![];
-    for _ in 0..threads {
+    for _ in 0..num_threads.max(1) {
         let work_arc = Arc::clone(&work_arc);
         let results = Arc::clone(&results);
-        let pb = Arc::clone(&pb_arc);
+        let thread_pb = Arc::clone(&pb_arc);
 
         let handle = thread::spawn(move || -> Result<()> {
             loop {
@@ -60,7 +58,7 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, threads: usize) -
                     Some((idx_pos, path, size)) => {
                         let hash = hash_file(&path)?;
                         results.lock().unwrap().push((idx_pos, hash));
-                        pb.inc(size);
+                        thread_pb.inc(size);
                     }
                 }
             }
@@ -73,7 +71,7 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, threads: usize) -
         h.join().unwrap()?;
     }
 
-    pb_arc.finish_with_message(format!("{}", "checksums done".green()));
+    pb_arc.finish_with_message("checksums done".green().to_string());
 
     let res = results.lock().unwrap();
     for (i, hash) in res.iter() {

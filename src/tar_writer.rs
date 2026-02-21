@@ -23,7 +23,7 @@ pub fn write_archive(
     let total_bytes: u64 = idx.header.total_size;
     let ext = algo.extension();
 
-    // --- Pass 1: assign each file to a tar part ---
+    // Pass 1: assign each file to a tar part
     let mut current_part: u32 = 0;
     let mut current_size: u64 = 0;
 
@@ -51,14 +51,14 @@ pub fn write_archive(
     let total_parts = current_part + 1;
     idx.header.total_parts = total_parts;
 
-    // --- Pass 2: write each part ---
+    // Pass 2: write each part
     let pb = ProgressBar::new(total_bytes);
     pb.set_style(
         ProgressStyle::with_template(
             "  {spinner:.cyan} Archiving  [{bar:40.cyan/blue}] {bytes}/{total_bytes}  ETA {eta}",
         )
         .unwrap()
-        .progress_chars("█▉▊▋▌▍▎▏ "),
+        .progress_chars("ââââââââ "),
     );
 
     for part in 0..total_parts {

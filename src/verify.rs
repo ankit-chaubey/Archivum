@@ -1,6 +1,7 @@
 use anyhow::Result;
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
+use std::collections::HashMap;
 use std::path::Path;
 
 use crate::checksum::hash_file;
@@ -21,26 +22,25 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
     );
     println!();
 
-    // --- Check tar parts exist ---
+    // Check tar parts exist
     for part in 0..idx.header.total_parts {
         let path = base_dir.join(format!("data.part{:03}{}", part, ext));
         if !path.exists() {
             let msg = format!("Missing tar part: {}", path.display());
             if continue_on_error {
-                eprintln!("  {} {}", "MISSING".red().bold(), path.display());
+                eprintln!("  MISSING {}", path.display());
             } else {
                 anyhow::bail!(msg);
             }
         } else {
             println!(
-                "  {} {}",
-                "  OK".green(),
+                "  OK  {}",
                 path.file_name().unwrap().to_string_lossy()
             );
         }
     }
 
-    // --- Checksum verification ---
+    // Checksum verification
     let files_with_checksums: Vec<_> = idx
         .entries
         .iter()
@@ -49,10 +49,7 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
 
     if files_with_checksums.is_empty() {
         println!();
-        println!(
-            "  {} No checksums in index (archive created without checksum support)",
-            "⚠".yellow()
-        );
+        println!("  No checksums in index (archive created without checksum support)");
         return Ok(());
     }
 
@@ -63,10 +60,9 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
             "  {spinner:.cyan} Verifying  [{bar:40.cyan/blue}] {bytes}/{total_bytes}  ETA {eta}",
         )
         .unwrap()
-        .progress_chars("█▉▊▋▌▍▎▏ "),
+        .progress_chars("ââââââââ "),
     );
 
-    use std::collections::HashMap;
     let mut by_part: HashMap<u32, Vec<&crate::index::IndexEntry>> = HashMap::new();
     for e in &files_with_checksums {
         by_part.entry(e.tar_part).or_default().push(e);
@@ -104,7 +100,10 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
             if let Some(&expected) = want.get(&item_path) {
                 let tmp = std::env::temp_dir().join(format!(
                     "archivum_verify_{}.tmp",
-                    item_path.file_name().unwrap_or_default().to_string_lossy()
+                    item_path
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
                 ));
                 {
                     let mut f = std::fs::File::create(&tmp)?;
@@ -122,8 +121,7 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
                     bad += 1;
                     pb.suspend(|| {
                         eprintln!(
-                            "  {} {} (expected {} got {})",
-                            "CORRUPT".red().bold(),
+                            "  CORRUPT {} (expected {} got {})",
                             item_path.display(),
                             &expected[..12],
                             &actual[..12]
@@ -139,15 +137,15 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
         }
     }
 
-    pb.finish_with_message("verification done".to_string());
+    pb.finish_with_message("verification done");
     println!();
-    println!("{}", "─".repeat(50).dimmed());
+    println!("{}", "-".repeat(50).dimmed());
     println!(
         "  {} OK: {}  CORRUPT: {}  MISSING: {}",
         if bad + missing == 0 {
-            "✓".green().bold()
+            "PASS".green().bold()
         } else {
-            "✗".red().bold()
+            "FAIL".red().bold()
         },
         ok.to_string().green(),
         if bad > 0 {
@@ -161,7 +159,7 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
             missing.to_string().green()
         }
     );
-    println!("{}", "─".repeat(50).dimmed());
+    println!("{}", "-".repeat(50).dimmed());
 
     if bad + missing > 0 && !continue_on_error {
         anyhow::bail!("{} file(s) failed verification", bad + missing);

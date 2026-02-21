@@ -18,7 +18,6 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
     );
     println!();
 
-    // Build map: relative_path → IndexEntry  (from archive)
     let archived: HashMap<&Path, &crate::index::IndexEntry> = idx
         .entries
         .iter()
@@ -26,7 +25,6 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
         .map(|e| (e.path.as_path(), e))
         .collect();
 
-    // Scan current source directory
     let current = scan_directory(source, &[])?;
     let current_map: HashMap<&Path, &crate::scan::ScanEntry> = current
         .iter()
@@ -34,7 +32,6 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
         .map(|e| (e.relative_path.as_path(), e))
         .collect();
 
-    // Use PathBuf (owned) in result vecs to avoid &&Path type-inference issues
     let mut added: Vec<(PathBuf, u64)> = vec![];
     let mut removed: Vec<PathBuf> = vec![];
     let mut modified: Vec<(PathBuf, u64, u64)> = vec![];
@@ -79,7 +76,7 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
     }
     for (path, old, new) in &modified {
         println!(
-            "  {} {} ({} → {})",
+            "  {} {} ({} -> {})",
             "~ MODIFIED".yellow().bold(),
             path.display(),
             human(*old),
@@ -88,7 +85,7 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
     }
 
     println!();
-    println!("{}", "─".repeat(60).dimmed());
+    println!("{}", "-".repeat(60).dimmed());
     println!(
         "  Added: {}  Removed: {}  Modified: {}  Unchanged: {}",
         added.len().to_string().green(),
@@ -96,7 +93,7 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
         modified.len().to_string().yellow(),
         unchanged.to_string().dimmed()
     );
-    println!("{}", "─".repeat(60).dimmed());
+    println!("{}", "-".repeat(60).dimmed());
 
     Ok(())
 }

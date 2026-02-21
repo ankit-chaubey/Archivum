@@ -1,0 +1,25 @@
+# Force LF line endings for all text files on all platforms.
+# This prevents Windows Git autocrlf from converting \n to \r\n,
+# which breaks `cargo fmt --check` on Linux/macOS CI runners.
+* text=auto eol=lf
+
+# Rust source files — always LF
+*.rs text eol=lf
+
+# TOML / YAML config files — always LF
+*.toml text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+# Markdown / text docs — always LF
+*.md   text eol=lf
+*.txt  text eol=lf
+
+# Shell scripts — always LF
+*.sh   text eol=lf
+
+# Binary files — no conversion
+*.tar   binary
+*.gz    binary
+*.zst   binary
+*.zip   binary

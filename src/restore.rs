@@ -28,7 +28,7 @@ pub fn restore(
     let globset = build_filter(filter)?;
 
     println!(
-        "{} {} → {}",
+        "{} {} -> {}",
         "Restoring:".cyan().bold(),
         index_path.display().to_string().yellow(),
         target.display().to_string().yellow()
@@ -65,7 +65,7 @@ pub fn restore(
                 if force {
                     fs::remove_file(&link_path).ok();
                 } else {
-                    eprintln!("  {} skip (exists): {}", "⚠".yellow(), link_path.display());
+                    eprintln!("  skip (exists): {}", link_path.display());
                     continue;
                 }
             }
@@ -76,12 +76,13 @@ pub fn restore(
             }
             #[cfg(not(unix))]
             {
-                eprintln!("  {} symlinks skipped on non-Unix", "⚠".yellow());
+                let _ = &link_path;
+                eprintln!("  symlinks skipped on non-Unix");
             }
         }
     }
 
-    // Third pass: files — grouped by tar_part for O(n+m) efficiency
+    // Third pass: files grouped by tar_part for O(n+m) efficiency
     let mut by_part: HashMap<u32, Vec<&IndexEntry>> = HashMap::new();
     for entry in &idx.entries {
         if entry.entry_type != EntryType::File {
@@ -106,7 +107,7 @@ pub fn restore(
             "  {spinner:.cyan} Restoring  [{bar:40.cyan/blue}] {bytes}/{total_bytes}  ETA {eta}",
         )
         .unwrap()
-        .progress_chars("█▉▊▋▌▍▎▏ "),
+        .progress_chars("ââââââââ "),
     );
 
     let mut sorted_parts: Vec<u32> = by_part.keys().cloned().collect();
@@ -134,7 +135,7 @@ pub fn restore(
                 let out_path = target.join(&entry.path);
 
                 if out_path.exists() && !force {
-                    eprintln!("  {} skip (exists): {}", "⚠".yellow(), out_path.display());
+                    eprintln!("  skip (exists): {}", out_path.display());
                     pb.inc(entry.size);
                     continue;
                 }
@@ -177,7 +178,6 @@ pub fn restore(
     Ok(())
 }
 
-/// Extract a single file from the archive
 pub fn extract_single(
     idx: &ArchivumIndex,
     base_dir: &Path,

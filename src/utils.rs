@@ -23,7 +23,7 @@ pub fn print_banner() {
     println!(
         "{}",
         format!(
-            " ▲ Archivum v{}  — deterministic archive system ",
+            " â² Archivum v{}  â deterministic archive system ",
             env!("CARGO_PKG_VERSION")
         )
         .black()
