@@ -6,8 +6,7 @@ pub fn human(b: u64) -> String {
 }
 
 pub fn fmt_time(unix: u64) -> String {
-    let dt = DateTime::<Utc>::from_timestamp(unix as i64, 0)
-        .unwrap_or_default();
+    let dt = DateTime::<Utc>::from_timestamp(unix as i64, 0).unwrap_or_default();
     dt.format("%Y-%m-%d %H:%M:%S UTC").to_string()
 }
 

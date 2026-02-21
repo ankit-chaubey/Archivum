@@ -14,7 +14,9 @@ use crate::scan::EntryType;
 
 /// Compute SHA-256 for all file entries and store in index
 pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, threads: usize) -> Result<()> {
-    let total: u64 = idx.entries.iter()
+    let total: u64 = idx
+        .entries
+        .iter()
         .filter(|e| e.entry_type == EntryType::File)
         .map(|e| e.size)
         .sum();
@@ -27,9 +29,7 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, threads: usize) -
         .unwrap()
         .progress_chars("█▉▊▋▌▍▎▏ "),
     );
-    pb.set_message("computing checksums...");
 
-    // Collect file entries that need checksums
     let work: Vec<(usize, std::path::PathBuf, u64)> = idx
         .entries
         .iter()

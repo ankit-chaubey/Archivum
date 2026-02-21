@@ -1,12 +1,12 @@
 mod checksum;
 mod compress;
+mod diff;
 mod index;
 mod restore;
 mod scan;
 mod tar_writer;
 mod utils;
 mod verify;
-mod diff;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
@@ -199,13 +199,9 @@ fn run() -> Result<()> {
             std::fs::create_dir_all(&output)
                 .with_context(|| format!("Failed to create output dir {}", output.display()))?;
 
-            // Compute checksums
             checksum::compute_checksums(&source, &mut idx, threads)?;
-
-            // Write tar parts
             tar_writer::write_archive(&source, &output, &mut idx, split_bytes, &algo)?;
 
-            // Save index
             let index_path = output.join("index.arc.json");
             idx.write(&index_path)?;
 
@@ -227,10 +223,7 @@ fn run() -> Result<()> {
                 utils::human(total_size).cyan(),
                 algo.name().green()
             );
-            println!(
-                "  Index : {}",
-                index_path.display().to_string().cyan()
-            );
+            println!("  Index : {}", index_path.display().to_string().cyan());
             println!("{}", "─".repeat(60).dimmed());
         }
 
@@ -252,10 +245,19 @@ fn run() -> Result<()> {
             restore_permissions,
         } => {
             utils::print_banner();
-            restore::restore(&index, &target, filter.as_deref(), force, restore_permissions)?;
+            restore::restore(
+                &index,
+                &target,
+                filter.as_deref(),
+                force,
+                restore_permissions,
+            )?;
         }
 
-        Commands::Verify { index, continue_on_error } => {
+        Commands::Verify {
+            index,
+            continue_on_error,
+        } => {
             utils::print_banner();
             verify::verify(&index, continue_on_error)?;
         }
@@ -273,7 +275,11 @@ fn run() -> Result<()> {
             if let Some(entry) = idx.entries.iter().find(|e| e.path == file) {
                 println!("{}", "─".repeat(50).dimmed());
                 println!("{} {}", "File:".cyan().bold(), entry.path.display());
-                println!("{} {}", "Type:".cyan(), format!("{:?}", entry.entry_type).green());
+                println!(
+                    "{} {}",
+                    "Type:".cyan(),
+                    format!("{:?}", entry.entry_type).green()
+                );
                 println!("{} {}", "Size:".cyan(), utils::human(entry.size).yellow());
                 println!(
                     "{} {}",
@@ -297,7 +303,11 @@ fn run() -> Result<()> {
             }
         }
 
-        Commands::Extract { index, file, output } => {
+        Commands::Extract {
+            index,
+            file,
+            output,
+        } => {
             let idx = index::ArchivumIndex::read(&index)?;
             let base = index.parent().unwrap_or(std::path::Path::new("."));
             restore::extract_single(&idx, base, &file, output.as_deref())?;

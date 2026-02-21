@@ -6,11 +6,10 @@ use std::path::Path;
 use crate::checksum::hash_file;
 use crate::index::ArchivumIndex;
 use crate::scan::EntryType;
-use crate::utils::human;
 
 pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
-    let idx = ArchivumIndex::read(index_path)
-        .map_err(|e| anyhow::anyhow!("Cannot read index: {}", e))?;
+    let idx =
+        ArchivumIndex::read(index_path).map_err(|e| anyhow::anyhow!("Cannot read index: {}", e))?;
     let base_dir = index_path.parent().unwrap_or(Path::new("."));
     let algo = &idx.header.compression;
     let ext = algo.extension();
@@ -33,7 +32,11 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
                 anyhow::bail!(msg);
             }
         } else {
-            println!("  {} {}", "  OK".green(), path.file_name().unwrap().to_string_lossy());
+            println!(
+                "  {} {}",
+                "  OK".green(),
+                path.file_name().unwrap().to_string_lossy()
+            );
         }
     }
 
@@ -63,8 +66,6 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
         .progress_chars("█▉▊▋▌▍▎▏ "),
     );
 
-    // We verify from the ORIGINAL source files via the archive — actually
-    // we need to re-extract and hash from tar parts.
     use std::collections::HashMap;
     let mut by_part: HashMap<u32, Vec<&crate::index::IndexEntry>> = HashMap::new();
     for e in &files_with_checksums {
@@ -88,7 +89,6 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
             continue;
         }
 
-        // Map path → expected hash
         let mut want: HashMap<std::path::PathBuf, &str> = HashMap::new();
         for e in entries {
             want.insert(e.path.clone(), e.sha256.as_deref().unwrap());
@@ -102,7 +102,6 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
             let item_path = item.path()?.into_owned();
 
             if let Some(&expected) = want.get(&item_path) {
-                // Write to temp and hash
                 let tmp = std::env::temp_dir().join(format!(
                     "archivum_verify_{}.tmp",
                     item_path.file_name().unwrap_or_default().to_string_lossy()
@@ -145,10 +144,22 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
     println!("{}", "─".repeat(50).dimmed());
     println!(
         "  {} OK: {}  CORRUPT: {}  MISSING: {}",
-        if bad + missing == 0 { "✓".green().bold() } else { "✗".red().bold() },
+        if bad + missing == 0 {
+            "✓".green().bold()
+        } else {
+            "✗".red().bold()
+        },
         ok.to_string().green(),
-        if bad > 0 { bad.to_string().red() } else { bad.to_string().green() },
-        if missing > 0 { missing.to_string().red() } else { missing.to_string().green() }
+        if bad > 0 {
+            bad.to_string().red()
+        } else {
+            bad.to_string().green()
+        },
+        if missing > 0 {
+            missing.to_string().red()
+        } else {
+            missing.to_string().green()
+        }
     );
     println!("{}", "─".repeat(50).dimmed());
 

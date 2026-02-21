@@ -1,12 +1,11 @@
 //! Writes source files into split, optionally compressed tar parts.
-//! Uses a two-pass approach: first assigns files to parts, then writes each part.
 
 use anyhow::{Context, Result};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::fs::File;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tar::Builder;
 
 use crate::compress::CompressionAlgo;
@@ -38,7 +37,6 @@ pub fn write_archive(
 
     for &ei in &file_indices {
         let size = idx.entries[ei].size;
-        // TAR overhead: 512-byte header + data rounded up to 512-byte blocks
         let overhead = 512 + ((size + 511) / 512) * 512;
 
         if current_size > 0 && current_size + overhead > split_bytes {
@@ -92,12 +90,14 @@ fn write_part(
     let mut writer: Box<dyn Write> = algo.wrap_writer(file)?;
     let mut builder = Builder::new(&mut writer);
 
-    for entry in idx.entries.iter().filter(|e| {
-        e.entry_type == EntryType::File && e.tar_part == part
-    }) {
+    for entry in idx
+        .entries
+        .iter()
+        .filter(|e| e.entry_type == EntryType::File && e.tar_part == part)
+    {
         let full = root.join(&entry.path);
-        let mut file = File::open(&full)
-            .with_context(|| format!("Cannot open {}", full.display()))?;
+        let mut file =
+            File::open(&full).with_context(|| format!("Cannot open {}", full.display()))?;
         builder
             .append_file(&entry.path, &mut file)
             .with_context(|| format!("Failed to append {}", entry.path.display()))?;
@@ -106,7 +106,7 @@ fn write_part(
 
     builder.finish().context("Failed to finalize tar part")?;
     drop(builder);
-    drop(writer); // ensures gzip/zstd flush+finish
+    drop(writer);
 
     Ok(())
 }

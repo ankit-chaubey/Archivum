@@ -39,12 +39,10 @@ pub fn scan_directory(root: &Path, excludes: &[String]) -> Result<Vec<ScanEntry>
         let path = entry.path();
         let rel = path.strip_prefix(root)?.to_path_buf();
 
-        // Skip root itself
         if rel.as_os_str().is_empty() {
             continue;
         }
 
-        // Apply exclude patterns
         if excludeset.is_match(&rel) {
             continue;
         }
@@ -52,14 +50,13 @@ pub fn scan_directory(root: &Path, excludes: &[String]) -> Result<Vec<ScanEntry>
         let meta = fs::symlink_metadata(path)?;
 
         #[cfg(unix)]
-        let (mtime, mode) = (
-            Some(meta.mtime() as u64),
-            Some(meta.mode()),
-        );
+        let (mtime, mode) = (Some(meta.mtime() as u64), Some(meta.mode()));
         #[cfg(not(unix))]
         let (mtime, mode) = {
             let m = meta.modified().ok().and_then(|t| {
-                t.duration_since(std::time::UNIX_EPOCH).ok().map(|d| d.as_secs())
+                t.duration_since(std::time::UNIX_EPOCH)
+                    .ok()
+                    .map(|d| d.as_secs())
             });
             (m, None)
         };

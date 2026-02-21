@@ -18,7 +18,6 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
     );
     println!();
 
-    // Build map of archive entries
     let archived: HashMap<&std::path::Path, &crate::index::IndexEntry> = idx
         .entries
         .iter()
@@ -26,7 +25,6 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
         .map(|e| (e.path.as_path(), e))
         .collect();
 
-    // Scan current source
     let current = scan_directory(source, &[])?;
     let current_map: HashMap<&std::path::Path, &crate::scan::ScanEntry> = current
         .iter()
@@ -39,10 +37,8 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
     let mut modified = vec![];
     let mut unchanged = 0usize;
 
-    // Files in source but not in archive → added since archive
     for (path, se) in &current_map {
         if let Some(ae) = archived.get(path) {
-            // Check if modified: compare mtime and size
             let size_changed = se.size != ae.size;
             let mtime_changed = se.mtime != ae.mtime;
             if size_changed || mtime_changed {
@@ -55,17 +51,17 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
         }
     }
 
-    // Files in archive but not in source → deleted
     for (path, ae) in &archived {
         if !current_map.contains_key(path) {
             removed.push((*path, ae.size));
         }
     }
 
-    // Print results
     if !changed_only {
         println!(
-            "  {} {}", "Unchanged:".dimmed(), unchanged.to_string().dimmed()
+            "  {} {}",
+            "Unchanged:".dimmed(),
+            unchanged.to_string().dimmed()
         );
     }
 
@@ -78,11 +74,7 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
         );
     }
     for (path, _) in &removed {
-        println!(
-            "  {} {}",
-            "- REMOVED".red().bold(),
-            path.display()
-        );
+        println!("  {} {}", "- REMOVED".red().bold(), path.display());
     }
     for (path, old, new) in &modified {
         println!(

@@ -36,7 +36,6 @@ pub fn restore(
     );
     println!();
 
-    // Create target dir
     fs::create_dir_all(target)
         .with_context(|| format!("Cannot create target dir {}", target.display()))?;
 
@@ -83,7 +82,7 @@ pub fn restore(
         }
     }
 
-    // Third pass: files — group by tar_part for efficiency (O(n+m) not O(n*m))
+    // Third pass: files — grouped by tar_part for O(n+m) efficiency
     let mut by_part: HashMap<u32, Vec<&IndexEntry>> = HashMap::new();
     for entry in &idx.entries {
         if entry.entry_type != EntryType::File {
@@ -118,7 +117,6 @@ pub fn restore(
         let entries = &by_part[&part];
         let part_path_buf = base_dir.join(format!("data.part{:03}{}", part, ext));
 
-        // Build lookup map for this part
         let mut want: HashMap<PathBuf, &IndexEntry> = HashMap::new();
         for e in entries {
             want.insert(e.path.clone(), e);
@@ -171,7 +169,11 @@ pub fn restore(
         human(total_bytes)
     ));
     println!();
-    println!("  {} {}", "Restored to:".cyan().bold(), target.display().to_string().yellow());
+    println!(
+        "  {} {}",
+        "Restored to:".cyan().bold(),
+        target.display().to_string().yellow()
+    );
 
     Ok(())
 }
@@ -205,7 +207,10 @@ pub fn extract_single(
         if item.path()? == file {
             let out_path = match output {
                 Some(p) => p.to_path_buf(),
-                None => file.file_name().map(PathBuf::from).unwrap_or_else(|| file.to_path_buf()),
+                None => file
+                    .file_name()
+                    .map(PathBuf::from)
+                    .unwrap_or_else(|| file.to_path_buf()),
             };
 
             if let Some(p) = out_path.parent() {
