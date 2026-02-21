@@ -181,9 +181,9 @@ jobs:
           key: ubuntu-cargo-publish-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Dry-run publish (validate)
-        run: cargo publish --dry-run
+        run: cargo publish --dry-run --allow-dirty
 
       - name: Publish to crates.io
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish
+        run: cargo publish --allow-dirty
