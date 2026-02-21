@@ -37,7 +37,7 @@ pub fn write_archive(
 
     for &ei in &file_indices {
         let size = idx.entries[ei].size;
-        let overhead = 512 + ((size + 511) / 512) * 512;
+        let overhead = 512 + size.div_ceil(512) * 512;
 
         if current_size > 0 && current_size + overhead > split_bytes {
             current_part += 1;

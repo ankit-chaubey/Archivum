@@ -17,7 +17,7 @@ pub fn restore(
     target: &Path,
     filter: Option<&str>,
     force: bool,
-    restore_permissions: bool,
+    _restore_permissions: bool,
 ) -> Result<()> {
     let idx = ArchivumIndex::read(index_path)
         .with_context(|| format!("Cannot read index: {}", index_path.display()))?;
@@ -49,7 +49,7 @@ pub fn restore(
         let dest = target.join(&entry.path);
         fs::create_dir_all(&dest)?;
         #[cfg(unix)]
-        if restore_permissions {
+        if _restore_permissions {
             apply_permissions(&dest, entry);
         }
     }
@@ -59,7 +59,7 @@ pub fn restore(
         if entry.entry_type != EntryType::Symlink {
             continue;
         }
-        if let Some(target_link) = &entry.symlink_target {
+        if let Some(_target_link) = &entry.symlink_target {
             let link_path = target.join(&entry.path);
             if link_path.exists() {
                 if force {
@@ -71,7 +71,7 @@ pub fn restore(
             }
             #[cfg(unix)]
             {
-                std::os::unix::fs::symlink(target_link, &link_path)
+                std::os::unix::fs::symlink(_target_link, &link_path)
                     .with_context(|| format!("Cannot create symlink {}", link_path.display()))?;
             }
             #[cfg(not(unix))]
@@ -154,7 +154,7 @@ pub fn restore(
                 pb.inc(entry.size);
 
                 #[cfg(unix)]
-                if restore_permissions {
+                if _restore_permissions {
                     apply_permissions(&out_path, entry);
                 }
             }

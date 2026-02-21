@@ -52,7 +52,7 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
         }
     }
 
-    for (&path, _ae) in &archived {
+    for &path in archived.keys() {
         if !current_map.contains_key(path) {
             removed.push(path.to_path_buf());
         }

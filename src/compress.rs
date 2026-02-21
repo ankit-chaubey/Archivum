@@ -4,9 +4,10 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum CompressionAlgo {
+    #[default]
     None,
     Gzip,
     Zstd,
@@ -68,8 +69,4 @@ impl CompressionAlgo {
     }
 }
 
-impl Default for CompressionAlgo {
-    fn default() -> Self {
-        Self::None
-    }
-}
+
