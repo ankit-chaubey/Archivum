@@ -33,10 +33,7 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
                 anyhow::bail!(msg);
             }
         } else {
-            println!(
-                "  OK  {}",
-                path.file_name().unwrap().to_string_lossy()
-            );
+            println!("  OK  {}", path.file_name().unwrap().to_string_lossy());
         }
     }
 
@@ -100,10 +97,7 @@ pub fn verify(index_path: &Path, continue_on_error: bool) -> Result<()> {
             if let Some(&expected) = want.get(&item_path) {
                 let tmp = std::env::temp_dir().join(format!(
                     "archivum_verify_{}.tmp",
-                    item_path
-                        .file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
+                    item_path.file_name().unwrap_or_default().to_string_lossy()
                 ));
                 {
                     let mut f = std::fs::File::create(&tmp)?;
