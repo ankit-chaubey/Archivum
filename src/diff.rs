@@ -1,7 +1,7 @@
 use anyhow::Result;
 use colored::Colorize;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::index::ArchivumIndex;
 use crate::scan::{scan_directory, EntryType};
@@ -18,42 +18,43 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
     );
     println!();
 
-    let archived: HashMap<&std::path::Path, &crate::index::IndexEntry> = idx
+    // Build map: relative_path → IndexEntry  (from archive)
+    let archived: HashMap<&Path, &crate::index::IndexEntry> = idx
         .entries
         .iter()
         .filter(|e| e.entry_type == EntryType::File)
         .map(|e| (e.path.as_path(), e))
         .collect();
 
+    // Scan current source directory
     let current = scan_directory(source, &[])?;
-    let current_map: HashMap<&std::path::Path, &crate::scan::ScanEntry> = current
+    let current_map: HashMap<&Path, &crate::scan::ScanEntry> = current
         .iter()
         .filter(|e| e.entry_type == EntryType::File)
-        .map(|e| (e.path.as_path(), e))
+        .map(|e| (e.relative_path.as_path(), e))
         .collect();
 
-    let mut added = vec![];
-    let mut removed = vec![];
-    let mut modified = vec![];
+    // Use PathBuf (owned) in result vecs to avoid &&Path type-inference issues
+    let mut added: Vec<(PathBuf, u64)> = vec![];
+    let mut removed: Vec<PathBuf> = vec![];
+    let mut modified: Vec<(PathBuf, u64, u64)> = vec![];
     let mut unchanged = 0usize;
 
-    for (path, se) in &current_map {
+    for (&path, se) in &current_map {
         if let Some(ae) = archived.get(path) {
-            let size_changed = se.size != ae.size;
-            let mtime_changed = se.mtime != ae.mtime;
-            if size_changed || mtime_changed {
-                modified.push((*path, ae.size, se.size));
+            if se.size != ae.size || se.mtime != ae.mtime {
+                modified.push((path.to_path_buf(), ae.size, se.size));
             } else {
                 unchanged += 1;
             }
         } else {
-            added.push((*path, se.size));
+            added.push((path.to_path_buf(), se.size));
         }
     }
 
-    for (path, ae) in &archived {
+    for (&path, _ae) in &archived {
         if !current_map.contains_key(path) {
-            removed.push((*path, ae.size));
+            removed.push(path.to_path_buf());
         }
     }
 
@@ -73,7 +74,7 @@ pub fn diff(index_path: &Path, source: &Path, changed_only: bool) -> Result<()> 
             human(*size).green()
         );
     }
-    for (path, _) in &removed {
+    for path in &removed {
         println!("  {} {}", "- REMOVED".red().bold(), path.display());
     }
     for (path, old, new) in &modified {

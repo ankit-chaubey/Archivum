@@ -8,7 +8,6 @@ use std::io::copy;
 use std::path::{Path, PathBuf};
 use tar::Archive;
 
-use crate::compress::CompressionAlgo;
 use crate::index::{ArchivumIndex, IndexEntry};
 use crate::scan::EntryType;
 use crate::utils::human;
