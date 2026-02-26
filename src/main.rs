@@ -359,8 +359,13 @@ fn run() -> Result<()> {
             let algo = CompressionAlgo::parse(compress_str)
                 .with_context(|| format!("Unknown compression algorithm: '{compress_str}'"))?;
             let zstd_lvl = zstd_level.unwrap_or(cfg.defaults.zstd_level);
-            let split = (split_gb.unwrap_or(cfg.defaults.split_gb) * 1024.0 * 1024.0 * 1024.0) as u64;
-            let split_f = if split_files > 0 { split_files } else { cfg.defaults.split_files };
+            let split =
+                (split_gb.unwrap_or(cfg.defaults.split_gb) * 1024.0 * 1024.0 * 1024.0) as u64;
+            let split_f = if split_files > 0 {
+                split_files
+            } else {
+                cfg.defaults.split_files
+            };
             let thread_count = threads.unwrap_or(cfg.defaults.threads);
             let do_dedup = dedup || cfg.create.dedup;
 
@@ -433,19 +438,30 @@ fn run() -> Result<()> {
                 idx.header.total_files.to_string().yellow(),
                 idx.header.total_dirs.to_string().yellow(),
                 idx.header.total_parts.to_string().yellow(),
-                if deduped > 0 { format!("  |  Deduped: {}", deduped.to_string().cyan()) } else { String::new() }
+                if deduped > 0 {
+                    format!("  |  Deduped: {}", deduped.to_string().cyan())
+                } else {
+                    String::new()
+                }
             ));
             out.println(&format!(
                 "  Size  : {}  |  Compression: {}",
                 utils::human(idx.header.total_size).cyan(),
                 algo.name().green()
             ));
-            out.println(&format!("  Index : {}", index_path.display().to_string().cyan()));
+            out.println(&format!(
+                "  Index : {}",
+                index_path.display().to_string().cyan()
+            ));
             out.println(&"─".repeat(60).dimmed().to_string());
         }
 
         // ── List ────────────────────────────────────────────────────────────
-        Commands::List { index, verbose, filter } => {
+        Commands::List {
+            index,
+            verbose,
+            filter,
+        } => {
             let idx = index::ArchivumIndex::read(&index)
                 .with_context(|| format!("Failed to read index: {}", index.display()))?;
             if out.json {
@@ -456,7 +472,13 @@ fn run() -> Result<()> {
         }
 
         // ── Restore ─────────────────────────────────────────────────────────
-        Commands::Restore { index, target, filter, force, restore_permissions } => {
+        Commands::Restore {
+            index,
+            target,
+            filter,
+            force,
+            restore_permissions,
+        } => {
             utils::print_banner(&out);
             let do_force = force || cfg.restore.force;
             let do_perm = restore_permissions || cfg.restore.restore_permissions;
@@ -464,13 +486,21 @@ fn run() -> Result<()> {
         }
 
         // ── Verify ──────────────────────────────────────────────────────────
-        Commands::Verify { index, continue_on_error } => {
+        Commands::Verify {
+            index,
+            continue_on_error,
+        } => {
             utils::print_banner(&out);
             verify::verify(&index, continue_on_error, &out)?;
         }
 
         // ── Diff ────────────────────────────────────────────────────────────
-        Commands::Diff { index, source, changed_only, checksum } => {
+        Commands::Diff {
+            index,
+            source,
+            changed_only,
+            checksum,
+        } => {
             let use_cs = checksum || cfg.update.checksum_diff;
             diff::diff(&index, &source, changed_only, use_cs, &out)?;
         }
@@ -494,7 +524,11 @@ fn run() -> Result<()> {
                 } else {
                     println!("{}", "─".repeat(50).dimmed());
                     println!("{} {}", "File:".cyan().bold(), entry.path.display());
-                    println!("{} {}", "Type:".cyan(), format!("{:?}", entry.entry_type).green());
+                    println!(
+                        "{} {}",
+                        "Type:".cyan(),
+                        format!("{:?}", entry.entry_type).green()
+                    );
                     println!("{} {}", "Size:".cyan(), utils::human(entry.size).yellow());
                     println!(
                         "{} {}",
@@ -513,7 +547,11 @@ fn run() -> Result<()> {
                         println!("{} {:o}", "Mode:".cyan(), mode);
                     }
                     if let Some(ref orig) = entry.dedup_of {
-                        println!("{} {}", "Dedup of:".cyan(), orig.display().to_string().yellow());
+                        println!(
+                            "{} {}",
+                            "Dedup of:".cyan(),
+                            orig.display().to_string().yellow()
+                        );
                     }
                     println!("{}", "─".repeat(50).dimmed());
                 }
@@ -523,7 +561,11 @@ fn run() -> Result<()> {
         }
 
         // ── Extract ─────────────────────────────────────────────────────────
-        Commands::Extract { index, file, output } => {
+        Commands::Extract {
+            index,
+            file,
+            output,
+        } => {
             let idx = index::ArchivumIndex::read(&index)?;
             let base = index.parent().unwrap_or(std::path::Path::new("."));
             restore::extract_single(&idx, base, &file, output.as_deref(), &out)?;
@@ -561,17 +603,30 @@ fn run() -> Result<()> {
             let compress_str = compress.as_deref().unwrap_or(&cfg.defaults.compress);
             let algo = CompressionAlgo::parse(compress_str)?;
             let zstd_lvl = zstd_level.unwrap_or(cfg.defaults.zstd_level);
-            let split = (split_gb.unwrap_or(cfg.defaults.split_gb) * 1024.0 * 1024.0 * 1024.0) as u64;
-            let split_f = if split_files > 0 { split_files } else { cfg.defaults.split_files };
+            let split =
+                (split_gb.unwrap_or(cfg.defaults.split_gb) * 1024.0 * 1024.0 * 1024.0) as u64;
+            let split_f = if split_files > 0 {
+                split_files
+            } else {
+                cfg.defaults.split_files
+            };
             let thread_count = threads.unwrap_or(cfg.defaults.threads);
             let use_cs = checksum || cfg.update.checksum_diff;
             let mut all_excludes = cfg.create.exclude.clone();
             all_excludes.append(&mut exclude);
 
             update::update(
-                &old_index, &source, &output,
-                split, split_f, &algo, zstd_lvl,
-                thread_count, &all_excludes, use_cs, &out,
+                &old_index,
+                &source,
+                &output,
+                split,
+                split_f,
+                &algo,
+                zstd_lvl,
+                thread_count,
+                &all_excludes,
+                use_cs,
+                &out,
             )?;
         }
 
@@ -583,11 +638,18 @@ fn run() -> Result<()> {
         }
 
         // ── Merge ───────────────────────────────────────────────────────────
-        Commands::Merge { indexes, output, split_gb, compress, zstd_level } => {
+        Commands::Merge {
+            indexes,
+            output,
+            split_gb,
+            compress,
+            zstd_level,
+        } => {
             let compress_str = compress.as_deref().unwrap_or(&cfg.defaults.compress);
             let algo = CompressionAlgo::parse(compress_str)?;
             let zstd_lvl = zstd_level.unwrap_or(cfg.defaults.zstd_level);
-            let split = (split_gb.unwrap_or(cfg.defaults.split_gb) * 1024.0 * 1024.0 * 1024.0) as u64;
+            let split =
+                (split_gb.unwrap_or(cfg.defaults.split_gb) * 1024.0 * 1024.0 * 1024.0) as u64;
             merge::merge(&indexes, &output, split, &algo, zstd_lvl, &out)?;
         }
 

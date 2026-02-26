@@ -61,8 +61,12 @@ pub struct IndexHeader {
     pub _integrity: Option<String>,
 }
 
-fn default_zstd_level() -> i32 { 3 }
-fn default_part_bases() -> Vec<String> { vec![String::new()] }
+fn default_zstd_level() -> i32 {
+    3
+}
+fn default_part_bases() -> Vec<String> {
+    vec![String::new()]
+}
 
 // ─── Entry ─────────────────────────────────────────────────────────────────
 
@@ -215,7 +219,12 @@ impl ArchivumIndex {
 
     // ─── Pretty print ─────────────────────────────────────────────────────
 
-    pub fn print_summary(&self, verbose: bool, filter: Option<&str>, out: &OutputCtx) -> Result<()> {
+    pub fn print_summary(
+        &self,
+        verbose: bool,
+        filter: Option<&str>,
+        out: &OutputCtx,
+    ) -> Result<()> {
         let h = &self.header;
         out.println(&"─".repeat(65).dimmed().to_string());
         out.println(&format!(
@@ -228,20 +237,38 @@ impl ArchivumIndex {
         if !h.notes.is_empty() {
             out.println(&format!("  Notes     : {}", h.notes.cyan()));
         }
-        out.println(&format!("  Files     : {}", h.total_files.to_string().cyan()));
-        out.println(&format!("  Dirs      : {}", h.total_dirs.to_string().cyan()));
-        out.println(&format!("  Symlinks  : {}", h.total_symlinks.to_string().cyan()));
+        out.println(&format!(
+            "  Files     : {}",
+            h.total_files.to_string().cyan()
+        ));
+        out.println(&format!(
+            "  Dirs      : {}",
+            h.total_dirs.to_string().cyan()
+        ));
+        out.println(&format!(
+            "  Symlinks  : {}",
+            h.total_symlinks.to_string().cyan()
+        ));
         out.println(&format!("  Total size: {}", human(h.total_size).cyan()));
-        out.println(&format!("  Parts     : {}", h.total_parts.to_string().cyan()));
+        out.println(&format!(
+            "  Parts     : {}",
+            h.total_parts.to_string().cyan()
+        ));
         out.println(&format!("  Compress  : {}", h.compression.name().green()));
         if h.compression == CompressionAlgo::Zstd {
-            out.println(&format!("  Zstd lvl  : {}", h.zstd_level.to_string().green()));
+            out.println(&format!(
+                "  Zstd lvl  : {}",
+                h.zstd_level.to_string().green()
+            ));
         }
 
         // Check for deduped files
         let deduped = self.entries.iter().filter(|e| e.dedup_of.is_some()).count();
         if deduped > 0 {
-            out.println(&format!("  Deduped   : {} files", deduped.to_string().yellow()));
+            out.println(&format!(
+                "  Deduped   : {} files",
+                deduped.to_string().yellow()
+            ));
         }
 
         if verbose || filter.is_some() {

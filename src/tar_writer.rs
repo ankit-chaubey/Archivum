@@ -37,7 +37,7 @@ pub fn write_archive(
     out_dir: &Path,
     idx: &mut ArchivumIndex,
     split_bytes: u64,
-    split_files: usize,  // 0 = disabled
+    split_files: usize, // 0 = disabled
     algo: &CompressionAlgo,
     zstd_level: i32,
 ) -> Result<()> {
@@ -76,7 +76,11 @@ pub fn write_archive(
         current_file_count += 1;
     }
 
-    let total_parts = if file_indices.is_empty() { 0 } else { current_part + 1 };
+    let total_parts = if file_indices.is_empty() {
+        0
+    } else {
+        current_part + 1
+    };
     idx.header.total_parts = total_parts;
 
     if total_parts == 0 {
@@ -123,14 +127,13 @@ fn write_part(
     let mut writer: Box<dyn Write> = algo.wrap_writer(file, zstd_level)?;
     let mut builder = Builder::new(&mut writer);
 
-    for entry in idx.entries.iter().filter(|e| {
-        e.entry_type == EntryType::File
-            && e.tar_part == part
-            && e.dedup_of.is_none()
-    }) {
+    for entry in idx
+        .entries
+        .iter()
+        .filter(|e| e.entry_type == EntryType::File && e.tar_part == part && e.dedup_of.is_none())
+    {
         let full = root.join(&entry.path);
-        let mut f =
-            File::open(&full).with_context(|| format!("Cannot open {}", full.display()))?;
+        let mut f = File::open(&full).with_context(|| format!("Cannot open {}", full.display()))?;
         builder
             .append_file(&entry.path, &mut f)
             .with_context(|| format!("Failed to append {}", entry.path.display()))?;

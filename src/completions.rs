@@ -35,9 +35,7 @@ pub fn generate_completions(shell: &str) -> Result<()> {
         "bash" => generate(shells::Bash, &mut cmd, &bin_name, &mut stdout),
         "zsh" => generate(shells::Zsh, &mut cmd, &bin_name, &mut stdout),
         "fish" => generate(shells::Fish, &mut cmd, &bin_name, &mut stdout),
-        "powershell" | "pwsh" => {
-            generate(shells::PowerShell, &mut cmd, &bin_name, &mut stdout)
-        }
+        "powershell" | "pwsh" => generate(shells::PowerShell, &mut cmd, &bin_name, &mut stdout),
         "elvish" => generate(shells::Elvish, &mut cmd, &bin_name, &mut stdout),
         other => {
             anyhow::bail!(

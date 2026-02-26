@@ -50,9 +50,7 @@ pub fn search(index_path: &Path, pattern: &str, out: &OutputCtx) -> Result<()> {
             let path_str = e.path.to_string_lossy();
             match &globset {
                 Some(gs) => gs.is_match(&e.path),
-                None => path_str
-                    .to_lowercase()
-                    .contains(&pattern.to_lowercase()),
+                None => path_str.to_lowercase().contains(&pattern.to_lowercase()),
             }
         })
         .collect();
@@ -71,8 +69,10 @@ pub fn search(index_path: &Path, pattern: &str, out: &OutputCtx) -> Result<()> {
             })
             .collect();
         out.raw(&serde_json::to_string_pretty(&json_matches).unwrap());
-        out.raw("
-");
+        out.raw(
+            "
+",
+        );
         return Ok(());
     }
 

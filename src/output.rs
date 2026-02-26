@@ -47,7 +47,12 @@ impl OutputCtx {
         } else {
             None
         };
-        Ok(Self { json, quiet, dry_run, log })
+        Ok(Self {
+            json,
+            quiet,
+            dry_run,
+            log,
+        })
     }
 
     /// Print a line to stdout (unless quiet), and also to log file (no ANSI).

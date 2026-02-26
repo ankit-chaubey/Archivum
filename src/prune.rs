@@ -34,12 +34,7 @@ struct ArchiveInfo {
     created_at: u64,
 }
 
-pub fn prune(
-    base_dir: &Path,
-    keep_last: usize,
-    max_age_days: u64,
-    out: &OutputCtx,
-) -> Result<()> {
+pub fn prune(base_dir: &Path, keep_last: usize, max_age_days: u64, out: &OutputCtx) -> Result<()> {
     out.println(&format!(
         "{} {} (keep={}, max_age={}d)",
         "Pruning archives in:".cyan().bold(),
@@ -75,7 +70,12 @@ pub fn prune(
                 });
             }
             Err(e) => {
-                out.println(&format!("  {} {} — {}", "skip (unreadable):".dimmed(), index_path.display(), e));
+                out.println(&format!(
+                    "  {} {} — {}",
+                    "skip (unreadable):".dimmed(),
+                    index_path.display(),
+                    e
+                ));
             }
         }
     }
@@ -142,8 +142,12 @@ pub fn prune(
     }
 
     if !out.dry_run {
-        out.println(&format!("
-  {} Pruned {} archive(s)", "Done.".green().bold(), to_delete.len()));
+        out.println(&format!(
+            "
+  {} Pruned {} archive(s)",
+            "Done.".green().bold(),
+            to_delete.len()
+        ));
     }
 
     Ok(())

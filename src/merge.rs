@@ -41,8 +41,8 @@ struct PartWriter {
 
 impl PartWriter {
     fn open(path: &Path, algo: &CompressionAlgo, zstd_level: i32) -> Result<Self> {
-        let f = fs::File::create(path)
-            .with_context(|| format!("Cannot create {}", path.display()))?;
+        let f =
+            fs::File::create(path).with_context(|| format!("Cannot create {}", path.display()))?;
         let writer: Box<dyn io::Write> = algo.wrap_writer(f, zstd_level)?;
         Ok(Self {
             builder: tar::Builder::new(writer),
@@ -51,7 +51,9 @@ impl PartWriter {
     }
 
     fn finish(mut self) -> Result<()> {
-        self.builder.finish().context("Failed to finalize tar part")?;
+        self.builder
+            .finish()
+            .context("Failed to finalize tar part")?;
         Ok(())
     }
 }

@@ -26,8 +26,8 @@ use std::path::Path;
 
 use crate::index::ArchivumIndex;
 use crate::output::OutputCtx;
-use crate::utils::human;
 use crate::scan::EntryType;
+use crate::utils::human;
 
 pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
     let idx = ArchivumIndex::read(index_path)?;
@@ -37,7 +37,11 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
 
     // ── Extension breakdown ────────────────────────────────────────────────
     let mut ext_map: HashMap<String, (u64, u64)> = HashMap::new(); // ext → (count, bytes)
-    for e in idx.entries.iter().filter(|e| e.entry_type == EntryType::File) {
+    for e in idx
+        .entries
+        .iter()
+        .filter(|e| e.entry_type == EntryType::File)
+    {
         let ext_str = e
             .path
             .extension()
@@ -47,10 +51,8 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
         entry.0 += 1;
         entry.1 += e.size;
     }
-    let mut ext_vec: Vec<(String, u64, u64)> = ext_map
-        .into_iter()
-        .map(|(k, (c, b))| (k, c, b))
-        .collect();
+    let mut ext_vec: Vec<(String, u64, u64)> =
+        ext_map.into_iter().map(|(k, (c, b))| (k, c, b)).collect();
     ext_vec.sort_by(|a, b| b.2.cmp(&a.2)); // sort by bytes desc
 
     // ── Part sizes (on disk) ───────────────────────────────────────────────
@@ -108,17 +110,23 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
             }).collect::<Vec<_>>()
         });
         out.raw(&serde_json::to_string_pretty(&result).unwrap());
-        out.raw("
-");
+        out.raw(
+            "
+",
+        );
         return Ok(());
     }
 
     out.println(&"─".repeat(65).dimmed().to_string());
     out.println(&" ▲ Archive Statistics".cyan().bold().to_string());
     out.println(&"─".repeat(65).dimmed().to_string());
-    out.println(&format!("  Archive    : {}", index_path.display().to_string().yellow()));
+    out.println(&format!(
+        "  Archive    : {}",
+        index_path.display().to_string().yellow()
+    ));
     out.println(&format!("  Created    : {}", h.created_at_human.dimmed()));
-    out.println(&format!("  Files      : {}  Dirs: {}  Symlinks: {}",
+    out.println(&format!(
+        "  Files      : {}  Dirs: {}  Symlinks: {}",
         h.total_files.to_string().cyan(),
         h.total_dirs.to_string().cyan(),
         h.total_symlinks.to_string().cyan()
@@ -127,8 +135,7 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
     out.println(&format!("  On-disk    : {}", human(total_on_disk).cyan()));
     out.println(&format!(
         "  Ratio      : {:.2}x  (saving: {:.1}%)",
-        ratio,
-        saving_pct
+        ratio, saving_pct
     ));
     if dedup_count > 0 {
         out.println(&format!(
@@ -140,7 +147,11 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
 
     // Parts table
     out.println("");
-    out.println(&format!("  {} ({} parts)", "Part sizes:".cyan().bold(), h.total_parts));
+    out.println(&format!(
+        "  {} ({} parts)",
+        "Part sizes:".cyan().bold(),
+        h.total_parts
+    ));
     for (part, size) in &part_sizes {
         let path = index_dir.join(format!("data.part{:03}{}", part, ext));
         let exists = if path.exists() { "✓" } else { "✗" };

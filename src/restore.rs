@@ -222,7 +222,11 @@ pub fn restore(
         if out.dry_run {
             for e in entries {
                 let out_path = safe_join(target, &e.path)?;
-                out.dry(&format!("restore {} ({})", out_path.display(), human(e.size)));
+                out.dry(&format!(
+                    "restore {} ({})",
+                    out_path.display(),
+                    human(e.size)
+                ));
                 pb.inc(e.size);
             }
             continue;
@@ -373,7 +377,11 @@ pub fn extract_single(
             };
 
             if out.dry_run {
-                out.dry(&format!("extract {} to {}", file.display(), out_path.display()));
+                out.dry(&format!(
+                    "extract {} to {}",
+                    file.display(),
+                    out_path.display()
+                ));
                 return Ok(());
             }
 

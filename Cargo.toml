@@ -18,7 +18,7 @@ keywords     = ["backup", "archive", "tar", "restore", "forensics"]
 categories   = ["filesystem", "command-line-utilities", "compression"]
 readme       = "README.md"
 exclude      = [".github", "*.zip", "test_all.sh"]
-rust-version = "1.75"
+rust-version = "1.78"
 
 # Primary binary
 [[bin]]

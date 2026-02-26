@@ -46,7 +46,10 @@ pub fn diff(
         source.display().to_string().yellow()
     ));
     if use_checksum {
-        out.println(&format!("  {}", "Using SHA-256 checksum comparison".dimmed()));
+        out.println(&format!(
+            "  {}",
+            "Using SHA-256 checksum comparison".dimmed()
+        ));
     }
     out.println("");
 
@@ -124,8 +127,10 @@ pub fn diff(
             "unchanged": unchanged
         });
         out.raw(&serde_json::to_string_pretty(&result).unwrap());
-        out.raw("
-");
+        out.raw(
+            "
+",
+        );
         return Ok(());
     }
 
@@ -146,7 +151,11 @@ pub fn diff(
         ));
     }
     for path in &removed {
-        out.println(&format!("  {} {}", "- REMOVED".red().bold(), path.display()));
+        out.println(&format!(
+            "  {} {}",
+            "- REMOVED".red().bold(),
+            path.display()
+        ));
     }
     for (path, reason) in &modified {
         out.println(&format!(

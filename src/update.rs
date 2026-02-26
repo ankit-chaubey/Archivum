@@ -115,7 +115,9 @@ pub fn update(
         unchanged.len().to_string().green(),
         changed_paths.len().to_string().yellow(),
         new_paths.len().to_string().cyan(),
-        scan.iter().filter(|e| e.entry_type == EntryType::File).count()
+        scan.iter()
+            .filter(|e| e.entry_type == EntryType::File)
+            .count()
     ));
     out.println("");
 
@@ -162,7 +164,15 @@ pub fn update(
 
     // ── Write new delta parts ─────────────────────────────────────────────
     // Old parts stay in old_index_dir; new parts go to output_dir
-    write_archive(source, output_dir, &mut delta_idx, split_bytes, split_files, algo, zstd_level)?;
+    write_archive(
+        source,
+        output_dir,
+        &mut delta_idx,
+        split_bytes,
+        split_files,
+        algo,
+        zstd_level,
+    )?;
 
     // ── Build merged index ────────────────────────────────────────────────
     // part_bases[0] = "" (output_dir itself, for new parts)
@@ -196,7 +206,10 @@ pub fn update(
     let mut total_size = 0u64;
     for e in &all_entries {
         match e.entry_type {
-            EntryType::File => { total_files += 1; total_size += e.size; }
+            EntryType::File => {
+                total_files += 1;
+                total_size += e.size;
+            }
             EntryType::Directory => total_dirs += 1,
             EntryType::Symlink => total_symlinks += 1,
         }
@@ -215,14 +228,8 @@ pub fn update(
             total_parts: delta_idx.header.total_parts,
             compression: algo.clone(),
             zstd_level,
-            notes: format!(
-                "Incremental update from {}",
-                old_index_path.display()
-            ),
-            part_bases: vec![
-                String::new(),
-                old_rel.to_string_lossy().into_owned(),
-            ],
+            notes: format!("Incremental update from {}", old_index_path.display()),
+            part_bases: vec![String::new(), old_rel.to_string_lossy().into_owned()],
             _integrity: None,
         },
         entries: all_entries,
@@ -249,7 +256,9 @@ pub fn update(
 fn relative_path(base: &Path, target: &Path) -> PathBuf {
     // Attempt simple relative computation
     let base_abs = base.canonicalize().unwrap_or_else(|_| base.to_path_buf());
-    let target_abs = target.canonicalize().unwrap_or_else(|_| target.to_path_buf());
+    let target_abs = target
+        .canonicalize()
+        .unwrap_or_else(|_| target.to_path_buf());
 
     let base_comps: Vec<_> = base_abs.components().collect();
     let target_comps: Vec<_> = target_abs.components().collect();

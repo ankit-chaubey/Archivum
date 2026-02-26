@@ -31,8 +31,8 @@ use crate::output::OutputCtx;
 use crate::scan::EntryType;
 
 pub fn verify(index_path: &Path, continue_on_error: bool, out: &OutputCtx) -> Result<()> {
-    let idx = ArchivumIndex::read(index_path)
-        .map_err(|e| anyhow::anyhow!("Cannot read index: {}", e))?;
+    let idx =
+        ArchivumIndex::read(index_path).map_err(|e| anyhow::anyhow!("Cannot read index: {}", e))?;
     let index_dir = index_path.parent().unwrap_or(Path::new("."));
 
     out.println(&format!(
@@ -67,11 +67,7 @@ pub fn verify(index_path: &Path, continue_on_error: bool, out: &OutputCtx) -> Re
     let files_with_checksums: Vec<_> = idx
         .entries
         .iter()
-        .filter(|e| {
-            e.entry_type == EntryType::File
-                && e.sha256.is_some()
-                && e.dedup_of.is_none()
-        })
+        .filter(|e| e.entry_type == EntryType::File && e.sha256.is_some() && e.dedup_of.is_none())
         .collect();
 
     if files_with_checksums.is_empty() {
@@ -171,8 +167,10 @@ pub fn verify(index_path: &Path, continue_on_error: bool, out: &OutputCtx) -> Re
             "all_parts_present": all_parts_ok
         });
         out.raw(&serde_json::to_string_pretty(&result).unwrap());
-        out.raw("
-");
+        out.raw(
+            "
+",
+        );
     } else {
         out.println("");
         out.println(&"-".repeat(50).dimmed().to_string());
@@ -185,8 +183,16 @@ pub fn verify(index_path: &Path, continue_on_error: bool, out: &OutputCtx) -> Re
             "  {}  OK: {}  CORRUPT: {}  MISSING: {}",
             status_str,
             ok.to_string().green(),
-            if bad > 0 { bad.to_string().red().to_string() } else { bad.to_string().green().to_string() },
-            if missing > 0 { missing.to_string().red().to_string() } else { missing.to_string().green().to_string() }
+            if bad > 0 {
+                bad.to_string().red().to_string()
+            } else {
+                bad.to_string().green().to_string()
+            },
+            if missing > 0 {
+                missing.to_string().red().to_string()
+            } else {
+                missing.to_string().green().to_string()
+            }
         ));
         out.println(&"-".repeat(50).dimmed().to_string());
     }

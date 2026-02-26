@@ -118,8 +118,8 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, num_threads: usiz
 pub fn hash_file(path: &Path) -> Result<String> {
     let mut hasher = Sha256::new();
     let mut buf = [0u8; 131072]; // 128 KiB chunks
-    let file = File::open(path)
-        .map_err(|e| anyhow::anyhow!("Cannot open {}: {}", path.display(), e))?;
+    let file =
+        File::open(path).map_err(|e| anyhow::anyhow!("Cannot open {}: {}", path.display(), e))?;
     let mut reader = BufReader::new(file);
     loop {
         let n = reader.read(&mut buf)?;

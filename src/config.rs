@@ -164,8 +164,8 @@ impl Config {
     }
 
     fn load_from(path: &PathBuf) -> Result<Self> {
-        let text = fs::read_to_string(path)
-            .with_context(|| format!("Cannot read {}", path.display()))?;
+        let text =
+            fs::read_to_string(path).with_context(|| format!("Cannot read {}", path.display()))?;
         let cfg: Config =
             toml::from_str(&text).with_context(|| format!("Invalid TOML in {}", path.display()))?;
         Ok(cfg)
@@ -178,8 +178,7 @@ impl Config {
                 fs::create_dir_all(parent)
                     .with_context(|| format!("Cannot create config dir {}", parent.display()))?;
             }
-            let text = toml::to_string_pretty(self)
-                .context("Failed to serialize config")?;
+            let text = toml::to_string_pretty(self).context("Failed to serialize config")?;
             fs::write(&path, text)
                 .with_context(|| format!("Cannot write config to {}", path.display()))?;
             println!(
@@ -254,10 +253,7 @@ impl Config {
             "Default exclude patterns (comma-separated globs):".cyan(),
             cfg.create.exclude.join(", ").yellow()
         );
-        let excl = prompt(
-            "Exclude patterns",
-            &cfg.create.exclude.join(","),
-        )?;
+        let excl = prompt("Exclude patterns", &cfg.create.exclude.join(","))?;
         if !excl.trim().is_empty() {
             cfg.create.exclude = excl.split(',').map(|s| s.trim().to_string()).collect();
         }
@@ -267,8 +263,7 @@ impl Config {
             "Restore Unix permissions by default (true/false)",
             &cfg.restore.restore_permissions.to_string(),
         )?;
-        cfg.restore.restore_permissions =
-            perm_str.eq_ignore_ascii_case("true") || perm_str == "1";
+        cfg.restore.restore_permissions = perm_str.eq_ignore_ascii_case("true") || perm_str == "1";
 
         // ── Prune keep
         let keep_str = prompt(
@@ -309,31 +304,64 @@ impl Config {
 
         println!("  [defaults]");
         println!("    compress      = {}", self.defaults.compress.green());
-        println!("    zstd_level    = {}", self.defaults.zstd_level.to_string().yellow());
-        println!("    split_gb      = {}", self.defaults.split_gb.to_string().yellow());
-        println!("    split_files   = {}", self.defaults.split_files.to_string().yellow());
-        println!("    threads       = {}", self.defaults.threads.to_string().yellow());
-        println!("    color         = {}", self.defaults.color.to_string().yellow());
+        println!(
+            "    zstd_level    = {}",
+            self.defaults.zstd_level.to_string().yellow()
+        );
+        println!(
+            "    split_gb      = {}",
+            self.defaults.split_gb.to_string().yellow()
+        );
+        println!(
+            "    split_files   = {}",
+            self.defaults.split_files.to_string().yellow()
+        );
+        println!(
+            "    threads       = {}",
+            self.defaults.threads.to_string().yellow()
+        );
+        println!(
+            "    color         = {}",
+            self.defaults.color.to_string().yellow()
+        );
 
         println!();
         println!("  [create]");
-        println!("    dedup         = {}", self.create.dedup.to_string().yellow());
+        println!(
+            "    dedup         = {}",
+            self.create.dedup.to_string().yellow()
+        );
         println!("    notes         = {:?}", self.create.notes);
         println!("    exclude       = {:?}", self.create.exclude);
 
         println!();
         println!("  [restore]");
-        println!("    force                = {}", self.restore.force.to_string().yellow());
-        println!("    restore_permissions  = {}", self.restore.restore_permissions.to_string().yellow());
+        println!(
+            "    force                = {}",
+            self.restore.force.to_string().yellow()
+        );
+        println!(
+            "    restore_permissions  = {}",
+            self.restore.restore_permissions.to_string().yellow()
+        );
 
         println!();
         println!("  [update]");
-        println!("    checksum_diff = {}", self.update.checksum_diff.to_string().yellow());
+        println!(
+            "    checksum_diff = {}",
+            self.update.checksum_diff.to_string().yellow()
+        );
 
         println!();
         println!("  [prune]");
-        println!("    keep_last    = {}", self.prune.keep_last.to_string().yellow());
-        println!("    max_age_days = {}", self.prune.max_age_days.to_string().yellow());
+        println!(
+            "    keep_last    = {}",
+            self.prune.keep_last.to_string().yellow()
+        );
+        println!(
+            "    max_age_days = {}",
+            self.prune.max_age_days.to_string().yellow()
+        );
 
         println!("{}", "─".repeat(60).dimmed());
     }

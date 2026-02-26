@@ -48,7 +48,11 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
     for entry in fs::read_dir(archive_dir)? {
         let entry = entry?;
         let path = entry.path();
-        let name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let name = path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
         if name.starts_with("data.part") && name.ends_with(ext.trim_start_matches('.')) {
             // Parse part number
             let num_str = name
@@ -67,7 +71,11 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
     for entry in fs::read_dir(archive_dir)? {
         let entry = entry?;
         let path = entry.path();
-        let name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let name = path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
 
         // Match pattern: data.part###<ext>
         if let Some(rest) = name.strip_prefix("data.part") {
@@ -180,8 +188,14 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
             created_at_unix: ts,
             created_at_human: fmt_time(ts),
             total_files,
-            total_dirs: entries.iter().filter(|e| e.entry_type == EntryType::Directory).count() as u64,
-            total_symlinks: entries.iter().filter(|e| e.entry_type == EntryType::Symlink).count() as u64,
+            total_dirs: entries
+                .iter()
+                .filter(|e| e.entry_type == EntryType::Directory)
+                .count() as u64,
+            total_symlinks: entries
+                .iter()
+                .filter(|e| e.entry_type == EntryType::Symlink)
+                .count() as u64,
             total_size,
             total_parts: found_parts.last().map(|(n, _)| n + 1).unwrap_or(0),
             compression: algo,
