@@ -7,25 +7,27 @@
 [advisories]
 # Reject crates with known security vulnerabilities
 version = 2
-ignore = []
+ignore = [
+    # number_prefix (transitive dep of indicatif) is unmaintained; no safe
+    # upgrade exists at this time. Tracked: RUSTSEC-2025-0119.
+    { id = "RUSTSEC-2025-0119", reason = "Transitive dep of indicatif; no safe upgrade available upstream" },
+]
 
 [licenses]
 version = 2
-# Explicitly allow all common permissive OSS licenses
+# Explicitly allow all common permissive OSS licenses actually used by the
+# dependency tree (verified via `cargo deny check licenses`).
 allow = [
     "Apache-2.0",
     "Apache-2.0 WITH LLVM-exception",
     "MIT",
     "MIT-0",
     "BSD-2-Clause",
-    "BSD-3-Clause",
-    "ISC",
     "Unlicense",
     "0BSD",
     "CC0-1.0",
     "Zlib",
     "Unicode-3.0",
-    "Unicode-DFS-2016",
     "MPL-2.0",
 ]
 # Confidence threshold for license text matching
