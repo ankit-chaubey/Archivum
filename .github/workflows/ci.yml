@@ -1,3 +1,9 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Archivum — CI Workflow
+# Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+# Apache License 2.0
+# ─────────────────────────────────────────────────────────────────────────────
+
 name: CI
 
 on:
@@ -11,9 +17,38 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+  # ── Lint + Format ─────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (deny warnings)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # ── Tests on all platforms ────────────────────────────────────────────────
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    needs: lint
     strategy:
       fail-fast: false
       matrix:
@@ -24,25 +59,17 @@ jobs:
 
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
 
-      - name: Cache cargo registry
+      - name: Cache cargo
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-
-      - name: Check formatting
-        run: cargo fmt --all -- --check
-
-      - name: Clippy lint
-        run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Build (debug)
         run: cargo build --all-targets
@@ -50,25 +77,52 @@ jobs:
       - name: Build (release)
         run: cargo build --release
 
-      - name: Run tests
+      - name: Run unit tests
         run: cargo test --all
 
-  cross-compile:
+      - name: Smoke test binary
+        shell: bash
+        run: |
+          ./target/release/archivum --version
+          ./target/release/archivum --help
+
+  # ── Cross-compile ─────────────────────────────────────────────────────────
+  cross:
     name: Cross-compile (${{ matrix.target }})
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
+      fail-fast: false
       matrix:
         target:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-gnu
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
       - name: Install cross
         run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Cross build
         run: cross build --target ${{ matrix.target }} --release
+
+  # ── MSRV check ────────────────────────────────────────────────────────────
+  msrv:
+    name: MSRV (Rust 1.75)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust 1.75
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.75"
+
+      - name: Build with MSRV
+        run: cargo build --release

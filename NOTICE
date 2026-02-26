@@ -1,0 +1,18 @@
+Archivum
+Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+
+Licensed under the Apache License, Version 2.0.
+
+This product includes software developed by the following open-source projects:
+- clap (MIT) — https://github.com/clap-rs/clap
+- serde (MIT/Apache-2.0) — https://github.com/serde-rs/serde
+- sha2 (MIT/Apache-2.0) — https://github.com/RustCrypto/hashes
+- blake3 (CC0/Apache-2.0) — https://github.com/BLAKE3-team/BLAKE3
+- rayon (MIT/Apache-2.0) — https://github.com/rayon-rs/rayon
+- zstd (MIT) — https://github.com/gyscos/zstd-rs
+- walkdir (MIT/Unlicense) — https://github.com/BurntSushi/walkdir
+- globset (MIT/Unlicense) — https://github.com/BurntSushi/ripgrep
+- colored (MPL-2.0) — https://github.com/colored-rs/colored
+- indicatif (MIT) — https://github.com/console-rs/indicatif
+- anyhow (MIT/Apache-2.0) — https://github.com/dtolnay/anyhow
+- chrono (MIT/Apache-2.0) — https://github.com/chronotope/chrono

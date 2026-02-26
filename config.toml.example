@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Archivum v0.2.0 — Configuration Example
+# Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+# Licensed under the Apache License, Version 2.0
+#
+# Copy to:
+#   Linux/macOS:  ~/.config/archivum/config.toml
+#   Windows:      %APPDATA%\archivum\config.toml
+#
+# Or run:  archivum setup
+# ─────────────────────────────────────────────────────────────────────────────
+
+[defaults]
+# Compression algorithm: none | gzip | zstd | bzip2 | lz4
+compress = "zstd"
+
+# Zstd compression level (1=fastest, 22=smallest)
+zstd_level = 9
+
+# Maximum size of each tar part in gigabytes
+split_gb = 2.0
+
+# Maximum files per part (0 = unlimited)
+split_files = 0
+
+# Checksum thread count
+threads = 8
+
+# ─────────────────────────────────────────────────────────────────────────────
+
+[output]
+# Suppress all stdout output globally
+quiet = false
+
+# Output JSON for all commands globally
+json = false
+
+# ─────────────────────────────────────────────────────────────────────────────
+
+[create]
+# Enable deduplication by default
+dedup = false
+
+# Default note (empty = disabled)
+notes = ""
+
+# Patterns to always exclude from archives
+exclude = [
+  "**/.DS_Store",
+  "**/Thumbs.db",
+  "**/__pycache__/**",
+  "**/*.pyc",
+  "**/.git/**",
+]
+
+# ─────────────────────────────────────────────────────────────────────────────
+
+[restore]
+# Overwrite existing files
+force = false
+
+# Restore Unix chmod bits
+restore_permissions = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+
+[update]
+# Use SHA-256 (not just mtime+size) for change detection
+checksum_diff = false
+
+# ─────────────────────────────────────────────────────────────────────────────
+
+[prune]
+# Number of most-recent archives to keep
+keep_last = 5
+
+# Remove archives older than N days (0 = disabled)
+max_age_days = 0

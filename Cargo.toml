@@ -1,42 +1,62 @@
-[package]
-name = "archivum"
-version = "0.1.0"
-edition = "2021"
-license = "MIT"
-authors = ["Ankit Chaubey <ankitchaubey.dev@gmail.com>"]
-description = "Archivum — deterministic, split, checksummed, compressed archive system with faithful restore"
-repository = "https://github.com/ankit-chaubey/Archivum"
-homepage = "https://github.com/ankit-chaubey/Archivum"
-documentation = "https://github.com/ankit-chaubey/Archivum#readme"
-keywords = ["backup", "archive", "tar", "restore", "forensics"]
-categories = ["filesystem", "command-line-utilities", "compression"]
-readme = "README.md"
-exclude = [".github", "*.zip"]
+# ─────────────────────────────────────────────────────────────────────────────
+# Archivum v0.2.0 — Cargo.toml
+# Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+# Licensed under the Apache License, Version 2.0
+# ─────────────────────────────────────────────────────────────────────────────
 
+[package]
+name         = "archivum"
+version      = "0.2.0"
+edition      = "2021"
+license      = "Apache-2.0"
+authors      = ["Ankit Chaubey <ankitchaubey.dev@gmail.com>"]
+description  = "Archivum — deterministic, split, checksummed, compressed archive system with faithful restore"
+repository   = "https://github.com/ankit-chaubey/Archivum"
+homepage     = "https://github.com/ankit-chaubey/Archivum"
+documentation = "https://github.com/ankit-chaubey/Archivum/tree/main/docs"
+keywords     = ["backup", "archive", "tar", "restore", "forensics"]
+categories   = ["filesystem", "command-line-utilities", "compression"]
+readme       = "README.md"
+exclude      = [".github", "*.zip", "test_all.sh"]
+rust-version = "1.75"
+
+# Primary binary
 [[bin]]
 name = "archivum"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.5", features = ["derive", "color"] }
-tar = "0.4"
-walkdir = "2.5"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-anyhow = "1.0"
-sha2 = "0.10"
-hex = "0.4"
-indicatif = "0.17"
-colored = "2.1"
-flate2 = "1.0"
-zstd = "0.13"
-globset = "0.4"
-humansize = "2.1"
-chrono = { version = "0.4", features = ["serde"] }
+clap          = { version = "4.5", features = ["derive", "color", "wrap_help"] }
+clap_complete = "4.5"
+tar           = "0.4"
+walkdir       = "2.5"
+serde         = { version = "1.0", features = ["derive"] }
+serde_json    = "1.0"
+anyhow        = "1.0"
+sha2          = "0.10"
+hex           = "0.4"
+indicatif     = "0.17"
+colored       = "2.1"
+flate2        = "1.0"
+zstd          = "0.13"
+bzip2         = "0.4"
+lz4_flex      = "0.11"
+globset       = "0.4"
+humansize     = "2.1"
+chrono        = { version = "0.4", features = ["serde"] }
+blake3        = "1.5"
+rayon         = "1.10"
+dirs          = "5.0"
+toml          = "0.8"
+regex         = "1.10"
 
 [profile.release]
-opt-level = 3
-lto = "fat"
+opt-level     = 3
+lto           = "fat"
 codegen-units = 1
-panic = "abort"
-strip = true
+panic         = "abort"
+strip         = true
+
+[profile.dev]
+opt-level = 0
+debug     = true

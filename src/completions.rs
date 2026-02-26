@@ -17,37 +17,35 @@
 //
 // All rights reserved 2026.
 // ─────────────────────────────────────────────────────────────────────────────
-use chrono::{DateTime, Utc};
+//! `completions` — generate shell completion scripts.
 
-pub fn human(b: u64) -> String {
-    use humansize::{format_size, BINARY};
-    format_size(b, BINARY)
-}
+use anyhow::Result;
+use clap::CommandFactory;
+use clap_complete::{generate, shells};
+use std::io;
 
-pub fn fmt_time(unix: u64) -> String {
-    let dt = DateTime::<Utc>::from_timestamp(unix as i64, 0).unwrap_or_default();
-    dt.format("%Y-%m-%d %H:%M:%S UTC").to_string()
-}
+use crate::Cli;
 
-pub fn now() -> u64 {
-    use std::time::*;
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs()
-}
+pub fn generate_completions(shell: &str) -> Result<()> {
+    let mut cmd = Cli::command();
+    let bin_name = cmd.get_name().to_string();
+    let mut stdout = io::stdout();
 
-pub fn print_banner(out: &crate::output::OutputCtx) {
-    use colored::Colorize;
-    out.println(
-        &format!(
-            " ▲ Archivum v{}  ─ deterministic archive system ",
-            env!("CARGO_PKG_VERSION")
-        )
-        .black()
-        .on_cyan()
-        .bold()
-        .to_string(),
-    );
-    out.println("");
+    match shell.to_lowercase().as_str() {
+        "bash" => generate(shells::Bash, &mut cmd, &bin_name, &mut stdout),
+        "zsh" => generate(shells::Zsh, &mut cmd, &bin_name, &mut stdout),
+        "fish" => generate(shells::Fish, &mut cmd, &bin_name, &mut stdout),
+        "powershell" | "pwsh" => {
+            generate(shells::PowerShell, &mut cmd, &bin_name, &mut stdout)
+        }
+        "elvish" => generate(shells::Elvish, &mut cmd, &bin_name, &mut stdout),
+        other => {
+            anyhow::bail!(
+                "Unknown shell '{}'. Supported: bash, zsh, fish, powershell, elvish",
+                other
+            );
+        }
+    }
+
+    Ok(())
 }

@@ -1,3 +1,22 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Archivum v0.2.0
+// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+// github.com/ankit-chaubey
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// All rights reserved 2026.
+// ─────────────────────────────────────────────────────────────────────────────
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde::{Deserialize, Serialize};
@@ -43,6 +62,7 @@ pub fn scan_directory(root: &Path, excludes: &[String]) -> Result<Vec<ScanEntry>
             continue;
         }
 
+        // Skip if any component or the full path matches an exclude pattern
         if excludeset.is_match(&rel) {
             continue;
         }
@@ -51,6 +71,7 @@ pub fn scan_directory(root: &Path, excludes: &[String]) -> Result<Vec<ScanEntry>
 
         #[cfg(unix)]
         let (mtime, mode) = (Some(meta.mtime() as u64), Some(meta.mode()));
+
         #[cfg(not(unix))]
         let (mtime, mode) = {
             let m = meta.modified().ok().and_then(|t| {
