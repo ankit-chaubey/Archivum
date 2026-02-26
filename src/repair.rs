@@ -90,7 +90,6 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
     }
 
     let _ = part_files; // suppress unused warning
-    let mut found_parts = found_parts;
     found_parts.sort_by_key(|(n, _)| *n);
 
     if found_parts.is_empty() {

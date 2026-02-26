@@ -36,6 +36,7 @@ use crate::scan::{scan_directory, EntryType};
 use crate::tar_writer::write_archive;
 use crate::utils::{fmt_time, human, now};
 
+#[allow(clippy::too_many_arguments)]
 pub fn update(
     old_index_path: &Path,
     source: &Path,
