@@ -6,6 +6,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.3.0] - 2026-06-09
+
+### Security
+
+- Patched RUSTSEC-2026-0067: `unpack_in` symlink chmod exploit (tar 0.4.44 and below)
+- Patched RUSTSEC-2026-0068: PAX size header incorrectly ignored (tar 0.4.44 and below)
+- Bumped `tar` dependency to 0.4.46
+
+### Fixed
+
+- Clippy warning `unnecessary_sort_by` in `stats.rs`
+
+---
+
 ## [0.2.0] - 2026-02-26
 
 ### Added
@@ -25,13 +39,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Archive notes** (`--notes`) - Attach a human-readable note to any archive
 - **Split by file count** (`--split-files N`) - complement to `--split-gb`
 - **Blake3 index integrity seal** - `index.arc.json.b3` tamper detection
-- **`OutputCtx`** - Unified quiet/json/dry-run/log-file output system across all commands
 - **`--quiet` flag** - Suppress all stdout output
 - **`--json` flag** - Machine-readable JSON output for every command
 - **`--dry-run` flag** - Safe simulation mode: no files written
 - **`--log-file` flag** - Append structured output to a file
 - **Configuration file** (`~/.config/archivum/config.toml`) with all defaults
-- **`arc` alias** - Short alias for the `archivum` binary
 - **Index v3** - Adds `notes`, `dedup_of`, `zstd_level`, multi-base part refs, Blake3 seal
 - **Parallel checksums** via Rayon thread pool
 
@@ -41,20 +53,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Quiet mode: `--quiet` flag was ignored in `list` and banner output
 - Log file: log file was empty because `list` used raw `println!` bypassing `OutputCtx`
 - Create: nonexistent source directory produced success exit code instead of error
-- Roundtrip test: md5sum comparison included file paths, causing false content-differs failures
 
 ### Improved
 
 - Restore engine: O(n + m) grouping by tar part (was O(n × m))
 - All commands respect `--quiet`, `--json`, `--log-file` consistently
-- Print banner and print_summary both route through `OutputCtx`
 - Richer colored terminal output throughout
 
 ### Security
 
 - Path traversal guard in restore (`..` components rejected)
 - Blake3 seal on index file - tampering is detected before restore/verify
-- Apache 2.0 license headers in all source files
 
 ---
 
@@ -90,5 +99,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+[0.3.0]: https://github.com/ankit-chaubey/Archivum/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ankit-chaubey/Archivum/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ankit-chaubey/Archivum/releases/tag/v0.1.0

@@ -1,10 +1,10 @@
 [package]
 name         = "archivum"
-version      = "0.2.0"
+version      = "0.3.0"
 edition      = "2021"
 license      = "Apache-2.0"
 authors      = ["Ankit Chaubey <ankitchaubey.dev@gmail.com>"]
-description  = "Archivum - deterministic, split, checksummed, compressed archive system with faithful restore"
+description  = "TAR archiver with SHA-256 checksums, split parts, and incremental updates."
 repository   = "https://github.com/ankit-chaubey/Archivum"
 homepage     = "https://github.com/ankit-chaubey/Archivum"
 documentation = "https://github.com/ankit-chaubey/Archivum/tree/main/docs"

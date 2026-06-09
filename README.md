@@ -674,7 +674,7 @@ Licensed under the Apache License, Version 2.0
 
 <div align="center">
 
-**▲ Archivum v0.2.0**
+**▲ Archivum v0.3.0**
 
 Made with ♥ by [Ankit Chaubey](https://github.com/ankit-chaubey) · [ankitchaubey.dev@gmail.com](mailto:ankitchaubey.dev@gmail.com)
 
