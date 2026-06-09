@@ -49,7 +49,7 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
     }
     let mut ext_vec: Vec<(String, u64, u64)> =
         ext_map.into_iter().map(|(k, (c, b))| (k, c, b)).collect();
-    ext_vec.sort_by(|a, b| b.2.cmp(&a.2));
+    ext_vec.sort_by_key(|b| std::cmp::Reverse(b.2));
 
     // actual on-disk sizes
     let mut part_sizes: Vec<(u32, u64)> = vec![];
