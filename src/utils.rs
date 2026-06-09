@@ -18,7 +18,7 @@
 use chrono::{DateTime, Utc};
 
 pub fn human(b: u64) -> String {
-    use humansize::{format_size, BINARY};
+    use humansize::{BINARY, format_size};
     format_size(b, BINARY)
 }
 

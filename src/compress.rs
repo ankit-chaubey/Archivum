@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
@@ -71,12 +71,12 @@ impl CompressionAlgo {
         match self {
             Self::None => Ok(Box::new(BufWriter::new(file))),
             Self::Gzip => {
-                use flate2::{write::GzEncoder, Compression};
+                use flate2::{Compression, write::GzEncoder};
                 Ok(Box::new(GzEncoder::new(file, Compression::default())))
             }
             Self::Bzip2 => {
-                use bzip2::write::BzEncoder;
                 use bzip2::Compression;
+                use bzip2::write::BzEncoder;
                 Ok(Box::new(BzEncoder::new(file, Compression::default())))
             }
             Self::Lz4 => {

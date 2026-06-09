@@ -23,7 +23,7 @@ use std::io::{self, copy};
 use std::path::{Path, PathBuf};
 
 use crate::compress::CompressionAlgo;
-use crate::index::{ArchivumIndex, IndexEntry, IndexHeader, INDEX_VERSION};
+use crate::index::{ArchivumIndex, INDEX_VERSION, IndexEntry, IndexHeader};
 use crate::output::OutputCtx;
 use crate::scan::EntryType;
 use crate::utils::{fmt_time, now};

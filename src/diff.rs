@@ -23,7 +23,7 @@ use std::path::{Path, PathBuf};
 use crate::checksum::hash_file;
 use crate::index::ArchivumIndex;
 use crate::output::OutputCtx;
-use crate::scan::{scan_directory, EntryType};
+use crate::scan::{EntryType, scan_directory};
 use crate::utils::human;
 
 pub fn diff(

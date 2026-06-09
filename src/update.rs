@@ -23,9 +23,9 @@ use std::path::{Path, PathBuf};
 
 use crate::checksum::{compute_checksums, hash_file};
 use crate::compress::CompressionAlgo;
-use crate::index::{ArchivumIndex, IndexEntry, IndexHeader, INDEX_VERSION};
+use crate::index::{ArchivumIndex, INDEX_VERSION, IndexEntry, IndexHeader};
 use crate::output::OutputCtx;
-use crate::scan::{scan_directory, EntryType};
+use crate::scan::{EntryType, scan_directory};
 use crate::tar_writer::write_archive;
 use crate::utils::{fmt_time, human, now};
 
