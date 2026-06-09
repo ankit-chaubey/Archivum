@@ -5,8 +5,8 @@ ignore = [
     # number_prefix (transitive dep of indicatif) is unmaintained; no safe
     # upgrade exists at this time. Tracked: RUSTSEC-2025-0119.
     { id = "RUSTSEC-2025-0119", reason = "Transitive dep of indicatif; no safe upgrade available upstream" },
-    { id = "RUSTSEC-2026-0067", reason = "Fixed in tar 0.4.45; pinned above" },
-    { id = "RUSTSEC-2026-0068", reason = "Fixed in tar 0.4.45; pinned above" },
+    { id = "RUSTSEC-2026-0067", reason = "Fixed in tar 0.4.46; pinned above" },
+    { id = "RUSTSEC-2026-0068", reason = "Fixed in tar 0.4.46; pinned above" },
 ]
 
 [licenses]
