@@ -26,4 +26,4 @@ You will receive a response within **72 hours**. If confirmed, a patch release w
 - **Blake3 index seal**: Any tampering with `index.arc.json` is detected before restore or verify
 - **SHA-256 per-file checksums**: Every restored file is verified against the stored hash
 - **Path traversal guard**: Archive entries with `..` path components are rejected during restore
-- **No network access**: Archivum operates entirely offline — no telemetry, no remote calls
+- **No network access**: Archivum operates entirely offline - no telemetry, no remote calls

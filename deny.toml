@@ -1,9 +1,3 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Archivum v0.2.0 — cargo-deny configuration
-# Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-# Apache License 2.0
-# ─────────────────────────────────────────────────────────────────────────────
-
 [advisories]
 # Reject crates with known security vulnerabilities
 version = 2
@@ -15,8 +9,6 @@ ignore = [
 
 [licenses]
 version = 2
-# Explicitly allow all common permissive OSS licenses actually used by the
-# dependency tree (verified via `cargo deny check licenses`).
 allow = [
     "Apache-2.0",
     "Apache-2.0 WITH LLVM-exception",

@@ -1,16 +1,10 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Archivum v0.2.0 — Cargo.toml
-# Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-# Licensed under the Apache License, Version 2.0
-# ─────────────────────────────────────────────────────────────────────────────
-
 [package]
 name         = "archivum"
 version      = "0.2.0"
 edition      = "2021"
 license      = "Apache-2.0"
 authors      = ["Ankit Chaubey <ankitchaubey.dev@gmail.com>"]
-description  = "Archivum — deterministic, split, checksummed, compressed archive system with faithful restore"
+description  = "Archivum - deterministic, split, checksummed, compressed archive system with faithful restore"
 repository   = "https://github.com/ankit-chaubey/Archivum"
 homepage     = "https://github.com/ankit-chaubey/Archivum"
 documentation = "https://github.com/ankit-chaubey/Archivum/tree/main/docs"

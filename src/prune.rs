@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! `prune` — delete old archives, keeping a minimum number.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::Result;
 use colored::Colorize;
@@ -44,12 +40,11 @@ pub fn prune(base_dir: &Path, keep_last: usize, max_age_days: u64, out: &OutputC
     ));
     out.println("");
 
-    // ── Find all archives (subdirs containing index.arc.json) ──────────────
-    let mut archives: Vec<ArchiveInfo> = vec![];
-
     if !base_dir.is_dir() {
         anyhow::bail!("Not a directory: {}", base_dir.display());
     }
+
+    let mut archives: Vec<ArchiveInfo> = vec![];
 
     for entry in fs::read_dir(base_dir)? {
         let entry = entry?;
@@ -71,7 +66,7 @@ pub fn prune(base_dir: &Path, keep_last: usize, max_age_days: u64, out: &OutputC
             }
             Err(e) => {
                 out.println(&format!(
-                    "  {} {} — {}",
+                    "  {} {} - {}",
                     "skip (unreadable):".dimmed(),
                     index_path.display(),
                     e
@@ -80,14 +75,13 @@ pub fn prune(base_dir: &Path, keep_last: usize, max_age_days: u64, out: &OutputC
         }
     }
 
-    // Sort oldest first
     archives.sort_by_key(|a| a.created_at);
 
     out.println(&format!("  Found {} archive(s)", archives.len()));
 
     if archives.len() <= keep_last {
         out.println(&format!(
-            "  {} Nothing to prune — count ({}) ≤ keep_last ({})",
+            "  {} Nothing to prune - count ({}) <= keep_last ({})",
             "OK".green().bold(),
             archives.len(),
             keep_last
@@ -98,19 +92,14 @@ pub fn prune(base_dir: &Path, keep_last: usize, max_age_days: u64, out: &OutputC
     let now_secs = now();
     let max_age_secs = max_age_days * 86400;
 
-    let mut to_delete: Vec<&ArchiveInfo> = vec![];
-
-    // Candidates to delete = all except the newest keep_last
     let candidates = &archives[..archives.len() - keep_last];
+    let mut to_delete: Vec<&ArchiveInfo> = vec![];
 
     for arch in candidates {
         let age_secs = now_secs.saturating_sub(arch.created_at);
         let too_old = max_age_days > 0 && age_secs >= max_age_secs;
 
-        if too_old {
-            to_delete.push(arch);
-        } else if max_age_days == 0 {
-            // No age limit — delete all beyond keep_last
+        if too_old || max_age_days == 0 {
             to_delete.push(arch);
         }
     }
@@ -136,15 +125,13 @@ pub fn prune(base_dir: &Path, keep_last: usize, max_age_days: u64, out: &OutputC
         if out.dry_run {
             out.dry(&format!("would delete: {}", arch.dir.display()));
         } else {
-            // Delete all archive parts and the index
             delete_archive(&arch.dir, out)?;
         }
     }
 
     if !out.dry_run {
         out.println(&format!(
-            "
-  {} Pruned {} archive(s)",
+            "\n  {} Pruned {} archive(s)",
             "Done.".green().bold(),
             to_delete.len()
         ));
@@ -168,13 +155,12 @@ fn delete_archive(dir: &Path, out: &OutputCtx) -> Result<()> {
         }
     }
 
-    // Remove dir if now empty
     if fs::read_dir(dir)?.next().is_none() {
         fs::remove_dir(dir).ok();
         out.println(&format!("  {} {}", "Deleted:".red().bold(), dir.display()));
     } else {
         out.println(&format!(
-            "  {} {} (directory not empty — only archive files removed)",
+            "  {} {} (directory not empty - only archive files removed)",
             "Cleaned:".yellow(),
             dir.display()
         ));

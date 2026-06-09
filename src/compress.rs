@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! Compression algorithm support: none, gzip, bzip2, lz4, zstd.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
@@ -71,7 +67,6 @@ impl CompressionAlgo {
         }
     }
 
-    /// Wrap a file writer with this compression.
     pub fn wrap_writer(&self, file: File, zstd_level: i32) -> Result<Box<dyn Write>> {
         match self {
             Self::None => Ok(Box::new(BufWriter::new(file))),
@@ -96,7 +91,6 @@ impl CompressionAlgo {
         }
     }
 
-    /// Wrap a file reader with this decompression.
     pub fn wrap_reader(&self, path: &Path) -> Result<Box<dyn Read>> {
         let file = File::open(path)?;
         match self {
@@ -118,8 +112,7 @@ impl CompressionAlgo {
     }
 }
 
-// ─── Lz4 wrapper that auto-finishes on drop ─────────────────────────────────
-
+// lz4 needs an explicit finish on drop; the crate doesn't do it automatically
 struct Lz4Writer<W: Write + 'static>(Option<lz4_flex::frame::FrameEncoder<W>>);
 
 impl<W: Write + 'static> Write for Lz4Writer<W> {

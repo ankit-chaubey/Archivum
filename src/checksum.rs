@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! Parallel SHA-256 checksumming using Rayon.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::Result;
 use colored::Colorize;
@@ -50,7 +46,7 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, num_threads: usiz
         .progress_chars("=> "),
     );
 
-    // Build work list: (index_position, abs_path, size)
+    // (index_position, abs_path, size)
     let work: Vec<(usize, std::path::PathBuf, u64)> = idx
         .entries
         .iter()
@@ -59,7 +55,6 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, num_threads: usiz
         .map(|(i, e)| (i, root.join(&e.path), e.size))
         .collect();
 
-    // Configure rayon thread pool
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(num_threads.max(1))
         .build()
@@ -88,13 +83,12 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, num_threads: usiz
 
     pb_arc.finish_with_message("checksums done".green().to_string());
 
-    // Write results back
     let res = results.lock().unwrap();
     for (i, hash) in res.iter() {
         idx.entries[*i].sha256 = Some(hash.clone());
     }
 
-    // ── Deduplication: mark duplicate files by SHA-256 ────────────────────
+    // mark duplicate files by sha256
     let mut seen: std::collections::HashMap<String, std::path::PathBuf> =
         std::collections::HashMap::new();
 
@@ -114,10 +108,10 @@ pub fn compute_checksums(root: &Path, idx: &mut ArchivumIndex, num_threads: usiz
     Ok(())
 }
 
-/// Stream-hash a file using SHA-256. No temp files.
+// 128 KiB chunks, no temp files
 pub fn hash_file(path: &Path) -> Result<String> {
     let mut hasher = Sha256::new();
-    let mut buf = [0u8; 131072]; // 128 KiB chunks
+    let mut buf = [0u8; 131072];
     let file =
         File::open(path).map_err(|e| anyhow::anyhow!("Cannot open {}: {}", path.display(), e))?;
     let mut reader = BufReader::new(file);
@@ -131,7 +125,6 @@ pub fn hash_file(path: &Path) -> Result<String> {
     Ok(encode(hasher.finalize()))
 }
 
-/// Stream-hash from an arbitrary reader (used in verify to avoid temp files).
 pub fn hash_reader<R: Read>(reader: &mut R) -> Result<String> {
     let mut hasher = Sha256::new();
     let mut buf = [0u8; 131072];

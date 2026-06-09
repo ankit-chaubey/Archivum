@@ -33,7 +33,7 @@ Open an issue using the **Bug Report** template. Please include:
 
 ### Requesting Features
 
-Open an issue using the **Feature Request** template. Describe the use case — not just the solution.
+Open an issue using the **Feature Request** template. Describe the use case - not just the solution.
 
 ### Submitting a PR
 
@@ -55,7 +55,6 @@ Open an issue using the **Feature Request** template. Describe the use case — 
 - Follow `rustfmt` formatting (enforced in CI)
 - No `clippy` warnings (enforced in CI)
 - New commands must have a module in `src/` and a corresponding entry in `src/main.rs`
-- All public functions should have doc comments
 - Add Apache 2.0 license header to new source files
 
 ---

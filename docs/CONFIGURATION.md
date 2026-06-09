@@ -1,4 +1,4 @@
-# Archivum — Configuration Reference
+# Archivum - Configuration Reference
 
 Archivum reads a `config.toml` file from:
 
@@ -14,10 +14,9 @@ Run `archivum setup` for an interactive wizard, or create the file manually.
 ## Full Reference
 
 ```toml
-# ─────────────────────────────────────────────────────────
-# Archivum Configuration — v0.2.0
+
+# Archivum Configuration - v0.2.0
 # ~/.config/archivum/config.toml
-# ─────────────────────────────────────────────────────────
 
 [defaults]
 # Default compression algorithm for create and update
@@ -36,7 +35,6 @@ split_files = 0
 # Number of threads for parallel SHA-256 checksums
 threads = 8
 
-# ─────────────────────────────────────────────────────────
 [output]
 # Suppress all stdout output globally
 quiet = false
@@ -44,7 +42,6 @@ quiet = false
 # Output JSON for all commands globally
 json = false
 
-# ─────────────────────────────────────────────────────────
 [create]
 # Enable deduplication by default
 dedup = false
@@ -52,7 +49,7 @@ dedup = false
 # Default note to attach to archives (empty = disabled)
 notes = ""
 
-# Global exclude patterns — applied to every create/update
+# Global exclude patterns - applied to every create/update
 exclude = [
   "**/.DS_Store",
   "**/Thumbs.db",
@@ -61,7 +58,6 @@ exclude = [
   "**/.git/**",
 ]
 
-# ─────────────────────────────────────────────────────────
 [restore]
 # Overwrite existing files without prompting
 force = false
@@ -69,12 +65,10 @@ force = false
 # Restore Unix file permissions (chmod bits)
 restore_permissions = true
 
-# ─────────────────────────────────────────────────────────
 [update]
 # Use SHA-256 (not just mtime+size) for change detection in diff/update
 checksum_diff = false
 
-# ─────────────────────────────────────────────────────────
 [prune]
 # Number of most-recent archives to keep
 keep_last = 5

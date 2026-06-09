@@ -22,7 +22,7 @@
 
 ## What is Archivum?
 
-**Archivum** is a modern, fast, and trustworthy command-line archive system built in Rust. It goes far beyond `tar` and `zip` — every file is checksummed with SHA-256, the index is human-readable JSON with a Blake3 integrity seal, and the archive can be split into any size, compressed with 5 algorithms, searched, diffed, deduplicated, merged, updated incrementally, and repaired.
+**Archivum** is a modern, fast, and trustworthy command-line archive system built in Rust. It goes far beyond `tar` and `zip` - every file is checksummed with SHA-256, the index is human-readable JSON with a Blake3 integrity seal, and the archive can be split into any size, compressed with 5 algorithms, searched, diffed, deduplicated, merged, updated incrementally, and repaired.
 
 Designed for **long-term backups**, **forensic preservation**, **offline cold storage**, and **DevOps workflows** where correctness is non-negotiable.
 
@@ -116,7 +116,7 @@ archivum verify ./backup/index.arc.json
 # Restore
 archivum restore ./backup/index.arc.json ./restored
 
-# Diff — what changed since the archive was made?
+# Diff - what changed since the archive was made?
 archivum diff ./backup/index.arc.json ./my-project
 
 # Search for files
@@ -130,7 +130,7 @@ archivum stats ./backup/index.arc.json
 
 ## Commands
 
-### `create` — Create an archive
+### `create` - Create an archive
 
 ```
 archivum create <SOURCE> <OUTPUT> [OPTIONS]
@@ -142,13 +142,13 @@ archivum create <SOURCE> <OUTPUT> [OPTIONS]
 | `--zstd-level <N>` | Zstd compression level (1–22) | `3` |
 | `--split-gb <GB>` | Max size of each part in GB | `4` |
 | `--split-files <N>` | Max files per part | `0` (unlimited) |
-| `--exclude <GLOB>` | Exclude pattern (repeatable) | — |
+| `--exclude <GLOB>` | Exclude pattern (repeatable) | - |
 | `--dedup` | Skip duplicate files (SHA-256 based) | off |
-| `--notes <TEXT>` | Attach a note to the archive | — |
+| `--notes <TEXT>` | Attach a note to the archive | - |
 | `--threads <N>` | Checksum parallelism | `4` |
 | `--dry-run` | Show what would happen without writing | off |
 | `--quiet` | Suppress all output | off |
-| `--log-file <PATH>` | Append output to a log file | — |
+| `--log-file <PATH>` | Append output to a log file | - |
 
 ```bash
 # Zstd compression, 1 GB parts, exclude build artifacts
@@ -178,7 +178,7 @@ backup/
 
 ---
 
-### `list` — List contents
+### `list` - List contents
 
 ```
 archivum list <INDEX> [OPTIONS]
@@ -198,7 +198,7 @@ archivum list ./backup/index.arc.json --json | jq '.header'
 
 ---
 
-### `restore` — Restore an archive
+### `restore` - Restore an archive
 
 ```
 archivum restore <INDEX> <TARGET> [OPTIONS]
@@ -222,11 +222,11 @@ archivum restore ./backup/index.arc.json ./restored --filter "**/*.rs"
 archivum restore ./backup/index.arc.json ./restored --force --restore-permissions
 ```
 
-> **Efficiency**: The restore engine groups files by tar part so each part is read exactly once — O(n + m) instead of the naïve O(n × m).
+> **Efficiency**: The restore engine groups files by tar part so each part is read exactly once - O(n + m) instead of the naïve O(n × m).
 
 ---
 
-### `verify` — Verify integrity
+### `verify` - Verify integrity
 
 ```
 archivum verify <INDEX> [OPTIONS]
@@ -244,7 +244,7 @@ archivum verify ./backup/index.arc.json --continue-on-error --json
 
 ---
 
-### `diff` — Detect drift
+### `diff` - Detect drift
 
 ```
 archivum diff <INDEX> <SOURCE> [OPTIONS]
@@ -270,7 +270,7 @@ archivum diff ./backup/index.arc.json ./my-project --changed-only
 
 ---
 
-### `search` — Search files
+### `search` - Search files
 
 ```
 archivum search <INDEX> <PATTERN>
@@ -285,7 +285,7 @@ archivum search ./backup/index.arc.json "config" --json
 
 ---
 
-### `stats` — Archive statistics
+### `stats` - Archive statistics
 
 ```
 archivum stats <INDEX>
@@ -300,7 +300,7 @@ archivum stats ./backup/index.arc.json --json
 
 ---
 
-### `info` — File metadata
+### `info` - File metadata
 
 ```
 archivum info <INDEX> <FILE>
@@ -325,7 +325,7 @@ Output:
 
 ---
 
-### `extract` — Extract single file
+### `extract` - Extract single file
 
 ```
 archivum extract <INDEX> <FILE> [OPTIONS]
@@ -338,13 +338,13 @@ archivum extract ./backup/index.arc.json docs/report.pdf --output ./recovered.pd
 
 ---
 
-### `cat` — Stream file to stdout
+### `cat` - Stream file to stdout
 
 ```
 archivum cat <INDEX> <FILE>
 ```
 
-Stream a single file's content directly to stdout — perfect for piping.
+Stream a single file's content directly to stdout - perfect for piping.
 
 ```bash
 archivum cat ./backup/index.arc.json config.toml
@@ -354,7 +354,7 @@ archivum cat ./backup/index.arc.json script.sh | bash
 
 ---
 
-### `update` — Incremental update
+### `update` - Incremental update
 
 ```
 archivum update <OLD_INDEX> <SOURCE> <OUTPUT> [OPTIONS]
@@ -369,7 +369,7 @@ archivum update ./backup/index.arc.json ./src ./backup-v2 --checksum
 
 ---
 
-### `merge` — Merge archives
+### `merge` - Merge archives
 
 ```
 archivum merge <INDEX1> <INDEX2> ... <OUTPUT>
@@ -384,7 +384,7 @@ archivum merge ./backup-jan/index.arc.json ./backup-feb/index.arc.json ./merged 
 
 ---
 
-### `prune` — Prune old archives
+### `prune` - Prune old archives
 
 ```
 archivum prune <DIR> [OPTIONS]
@@ -405,7 +405,7 @@ archivum prune /backups --max-age 90 --dry-run
 
 ---
 
-### `repair` — Repair a corrupted index
+### `repair` - Repair a corrupted index
 
 ```
 archivum repair <DIR>
@@ -420,7 +420,7 @@ archivum repair ./backup --compression zstd
 
 ---
 
-### `completions` — Shell completions
+### `completions` - Shell completions
 
 ```
 archivum completions <SHELL>
@@ -485,7 +485,7 @@ See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for full reference.
 
 ## Index Format
 
-The `index.arc.json` is intentionally human-readable — inspect with any editor, `jq`, or `grep` without Archivum installed.
+The `index.arc.json` is intentionally human-readable - inspect with any editor, `jq`, or `grep` without Archivum installed.
 
 ```json
 {
@@ -500,7 +500,7 @@ The `index.arc.json` is intentionally human-readable — inspect with any editor
     "total_parts": 2,
     "compression": "zstd",
     "zstd_level": 9,
-    "notes": "Production backup — pre-deploy"
+    "notes": "Production backup - pre-deploy"
   },
   "entries": [
     {
@@ -518,7 +518,7 @@ The `index.arc.json` is intentionally human-readable — inspect with any editor
 }
 ```
 
-The accompanying `.b3` file contains a Blake3 hash of the index — `verify` checks this automatically to detect any tampering.
+The accompanying `.b3` file contains a Blake3 hash of the index - `verify` checks this automatically to detect any tampering.
 
 See [`docs/INDEX_FORMAT.md`](docs/INDEX_FORMAT.md) for the full schema reference.
 
@@ -553,26 +553,26 @@ These flags work with every command:
 
 ```
 src/
-├── main.rs         — CLI (clap), subcommand dispatch, OutputCtx wiring
-├── output.rs       — OutputCtx: quiet / json / dry-run / log-file
-├── config.rs       — config.toml loading, setup wizard
-├── scan.rs         — Directory traversal, symlink detection, excludes
-├── checksum.rs     — Parallel SHA-256 + Blake3 computation
-├── compress.rs     — Compression abstraction (none/gzip/zstd/bzip2/lz4)
-├── tar_writer.rs   — Two-pass tar part assignment + writing
-├── index.rs        — ArchivumIndex v3: build, read, write, print, Blake3 seal
-├── restore.rs      — Grouped restore + single-file extract, path traversal guard
-├── verify.rs       — Part existence + checksum + Blake3 index verification
-├── diff.rs         — Archive vs source drift detection
-├── search.rs       — Glob + substring search
-├── stats.rs        — Compression ratio, extension breakdown, dedup savings
-├── update.rs       — Incremental archive update
-├── merge.rs        — Multi-archive merge
-├── prune.rs        — Age + count-based archive pruning
-├── repair.rs       — Index reconstruction from tar parts
-├── cat.rs          — Stream single file to stdout
-├── completions.rs  — Shell completion generation
-└── utils.rs        — Formatting, timestamps, banner
+├── main.rs         - CLI (clap), subcommand dispatch, OutputCtx wiring
+├── output.rs       - OutputCtx: quiet / json / dry-run / log-file
+├── config.rs       - config.toml loading, setup wizard
+├── scan.rs         - Directory traversal, symlink detection, excludes
+├── checksum.rs     - Parallel SHA-256 + Blake3 computation
+├── compress.rs     - Compression abstraction (none/gzip/zstd/bzip2/lz4)
+├── tar_writer.rs   - Two-pass tar part assignment + writing
+├── index.rs        - ArchivumIndex v3: build, read, write, print, Blake3 seal
+├── restore.rs      - Grouped restore + single-file extract, path traversal guard
+├── verify.rs       - Part existence + checksum + Blake3 index verification
+├── diff.rs         - Archive vs source drift detection
+├── search.rs       - Glob + substring search
+├── stats.rs        - Compression ratio, extension breakdown, dedup savings
+├── update.rs       - Incremental archive update
+├── merge.rs        - Multi-archive merge
+├── prune.rs        - Age + count-based archive pruning
+├── repair.rs       - Index reconstruction from tar parts
+├── cat.rs          - Stream single file to stdout
+├── completions.rs  - Shell completion generation
+└── utils.rs        - Formatting, timestamps, banner
 ```
 
 ---
@@ -580,7 +580,7 @@ src/
 ## Performance
 
 - **Parallel checksums**: SHA-256 computed with a configurable Rayon thread pool (`--threads`)
-- **Efficient restore**: Files grouped by tar part — each part opened exactly once
+- **Efficient restore**: Files grouped by tar part - each part opened exactly once
 - **Streaming writes**: Source → tar with no intermediate buffering
 - **Deduplication**: Skips re-writing files with identical SHA-256 hashes
 - **Incremental update**: Only archives new/modified files, O(diff) not O(total)
@@ -618,7 +618,7 @@ archivum create ./src ./out \
 ## Automation Examples
 
 ```bash
-# Daily backup cron — quiet, logged
+# Daily backup cron - quiet, logged
 0 2 * * * archivum create /data /backups/$(date +%F) \
   --compress zstd --dedup --quiet --log-file /var/log/archivum.log
 
@@ -662,7 +662,7 @@ To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE)
+Apache 2.0 - see [LICENSE](LICENSE)
 
 ```
 Copyright 2026 Ankit Chaubey

@@ -1,22 +1,20 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 mod cat;
 mod checksum;
 mod completions;
@@ -46,9 +44,7 @@ use compress::CompressionAlgo;
 use config::Config;
 use output::OutputCtx;
 
-// ─── CLI definition ─────────────────────────────────────────────────────────
-
-/// Archivum — deterministic, split, checksummed, compressed archive system.
+/// Archivum - deterministic, split, checksummed, compressed archive system.
 /// Also available as `arc` (same binary, both names).
 #[derive(Parser)]
 #[command(
@@ -57,34 +53,20 @@ use output::OutputCtx;
     author = "Ankit Chaubey <ankitchaubey.dev@gmail.com>",
     about = "Deterministic, split, checksummed, compressed archive system",
     after_help = concat!(
-        "EXAMPLES:
-",
-        "  archivum create ./photos ./backup
-",
-        "  arc create ./photos ./backup --compress zstd --split-gb 2
-",
-        "  archivum list ./backup/index.arc.json
-",
-        "  archivum restore ./backup/index.arc.json ./restored
-",
-        "  archivum verify ./backup/index.arc.json
-",
-        "  archivum diff ./backup/index.arc.json ./photos
-",
-        "  archivum update ./backup/index.arc.json ./photos ./backup2
-",
-        "  archivum stats ./backup/index.arc.json
-",
-        "  archivum search ./backup/index.arc.json '*.jpg'
-",
-        "  archivum cat ./backup/index.arc.json photos/img.jpg > img.jpg
-",
-        "  archivum completions bash >> ~/.bashrc
-",
-        "  archivum setup
-",
-        "
-CONFIG: ~/.config/archivum/config.toml (run `archivum setup` to configure)"
+        "EXAMPLES:\n",
+        "  archivum create ./photos ./backup\n",
+        "  arc create ./photos ./backup --compress zstd --split-gb 2\n",
+        "  archivum list ./backup/index.arc.json\n",
+        "  archivum restore ./backup/index.arc.json ./restored\n",
+        "  archivum verify ./backup/index.arc.json\n",
+        "  archivum diff ./backup/index.arc.json ./photos\n",
+        "  archivum update ./backup/index.arc.json ./photos ./backup2\n",
+        "  archivum stats ./backup/index.arc.json\n",
+        "  archivum search ./backup/index.arc.json '*.jpg'\n",
+        "  archivum cat ./backup/index.arc.json photos/img.jpg > img.jpg\n",
+        "  archivum completions bash >> ~/.bashrc\n",
+        "  archivum setup\n",
+        "\nCONFIG: ~/.config/archivum/config.toml (run `archivum setup` to configure)"
     )
 )]
 pub struct Cli {
@@ -125,7 +107,7 @@ enum Commands {
         /// Compression algorithm: none | gzip | bzip2 | lz4 | zstd
         #[arg(long, value_name = "ALGO")]
         compress: Option<String>,
-        /// Zstd compression level (1–22)
+        /// Zstd compression level (1-22)
         #[arg(long, value_name = "LEVEL")]
         zstd_level: Option<i32>,
         /// Exclude glob patterns (repeatable)
@@ -316,8 +298,6 @@ enum Commands {
     Config,
 }
 
-// ─── Entry point ─────────────────────────────────────────────────────────────
-
 fn main() {
     if let Err(e) = run() {
         eprintln!("{} {}", "error:".red().bold(), e);
@@ -340,7 +320,6 @@ fn run() -> Result<()> {
     )?;
 
     match cli.command {
-        // ── Create ──────────────────────────────────────────────────────────
         Commands::Create {
             source,
             output,
@@ -369,12 +348,11 @@ fn run() -> Result<()> {
             let thread_count = threads.unwrap_or(cfg.defaults.threads);
             let do_dedup = dedup || cfg.create.dedup;
 
-            // Merge config excludes
             let mut all_excludes = cfg.create.exclude.clone();
             all_excludes.append(&mut exclude);
 
             out.println(&format!(
-                "{} {} → {}",
+                "{} {} -> {}",
                 "Creating archive:".cyan().bold(),
                 source.display().to_string().yellow(),
                 output.display().to_string().yellow()
@@ -416,7 +394,6 @@ fn run() -> Result<()> {
 
             checksum::compute_checksums(&source, &mut idx, thread_count)?;
 
-            // If dedup NOT requested, clear dedup_of fields
             if !do_dedup {
                 for e in idx.entries.iter_mut() {
                     e.dedup_of = None;
@@ -456,7 +433,6 @@ fn run() -> Result<()> {
             out.println(&"─".repeat(60).dimmed().to_string());
         }
 
-        // ── List ────────────────────────────────────────────────────────────
         Commands::List {
             index,
             verbose,
@@ -471,7 +447,6 @@ fn run() -> Result<()> {
             }
         }
 
-        // ── Restore ─────────────────────────────────────────────────────────
         Commands::Restore {
             index,
             target,
@@ -485,7 +460,6 @@ fn run() -> Result<()> {
             restore::restore(&index, &target, filter.as_deref(), do_force, do_perm, &out)?;
         }
 
-        // ── Verify ──────────────────────────────────────────────────────────
         Commands::Verify {
             index,
             continue_on_error,
@@ -494,7 +468,6 @@ fn run() -> Result<()> {
             verify::verify(&index, continue_on_error, &out)?;
         }
 
-        // ── Diff ────────────────────────────────────────────────────────────
         Commands::Diff {
             index,
             source,
@@ -505,7 +478,6 @@ fn run() -> Result<()> {
             diff::diff(&index, &source, changed_only, use_cs, &out)?;
         }
 
-        // ── Info ────────────────────────────────────────────────────────────
         Commands::Info { index, file } => {
             let idx = index::ArchivumIndex::read(&index)?;
             if let Some(entry) = idx.entries.iter().find(|e| e.path == file) {
@@ -533,7 +505,7 @@ fn run() -> Result<()> {
                     println!(
                         "{} {}",
                         "SHA-256:".cyan(),
-                        entry.sha256.as_deref().unwrap_or("—").yellow()
+                        entry.sha256.as_deref().unwrap_or("-").yellow()
                     );
                     println!(
                         "{} {}",
@@ -560,7 +532,6 @@ fn run() -> Result<()> {
             }
         }
 
-        // ── Extract ─────────────────────────────────────────────────────────
         Commands::Extract {
             index,
             file,
@@ -571,22 +542,18 @@ fn run() -> Result<()> {
             restore::extract_single(&idx, base, &file, output.as_deref(), &out)?;
         }
 
-        // ── Cat ─────────────────────────────────────────────────────────────
         Commands::Cat { index, file } => {
             cat::cat(&index, &file)?;
         }
 
-        // ── Search ──────────────────────────────────────────────────────────
         Commands::Search { index, pattern } => {
             search::search(&index, &pattern, &out)?;
         }
 
-        // ── Stats ────────────────────────────────────────────────────────────
         Commands::Stats { index } => {
             stats::stats(&index, &out)?;
         }
 
-        // ── Update ──────────────────────────────────────────────────────────
         Commands::Update {
             old_index,
             source,
@@ -630,14 +597,12 @@ fn run() -> Result<()> {
             )?;
         }
 
-        // ── Prune ───────────────────────────────────────────────────────────
         Commands::Prune { dir, keep, max_age } => {
             let keep_n = keep.unwrap_or(cfg.prune.keep_last);
             let age = max_age.unwrap_or(cfg.prune.max_age_days);
             prune::prune(&dir, keep_n, age, &out)?;
         }
 
-        // ── Merge ───────────────────────────────────────────────────────────
         Commands::Merge {
             indexes,
             output,
@@ -653,23 +618,19 @@ fn run() -> Result<()> {
             merge::merge(&indexes, &output, split, &algo, zstd_lvl, &out)?;
         }
 
-        // ── Repair ──────────────────────────────────────────────────────────
         Commands::Repair { dir, compression } => {
             utils::print_banner(&out);
             repair::repair(&dir, &compression, &out)?;
         }
 
-        // ── Completions ─────────────────────────────────────────────────────
         Commands::Completions { shell } => {
             completions::generate_completions(&shell)?;
         }
 
-        // ── Setup ───────────────────────────────────────────────────────────
         Commands::Setup => {
             Config::setup_interactive()?;
         }
 
-        // ── Config ──────────────────────────────────────────────────────────
         Commands::Config => {
             cfg.print();
             if let Some(p) = config::config_path() {

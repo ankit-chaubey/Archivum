@@ -1,4 +1,4 @@
-# Archivum — Architecture
+# Archivum - Architecture
 
 This document describes the internal structure of the Archivum codebase.
 
@@ -8,8 +8,8 @@ This document describes the internal structure of the Archivum codebase.
 
 ```
 src/
-├── main.rs          CLI entry point — clap parsing, command dispatch
-├── output.rs        OutputCtx — unified quiet/json/dry-run/log routing
+├── main.rs          CLI entry point - clap parsing, command dispatch
+├── output.rs        OutputCtx - unified quiet/json/dry-run/log routing
 ├── config.rs        config.toml loading, setup wizard
 │
 ├── scan.rs          Directory traversal (WalkDir), symlink detection, excludes
@@ -116,16 +116,16 @@ pub struct OutputCtx {
 }
 ```
 
-- `out.println(s)` — prints unless quiet; always logs to file
-- `out.eprintln(s)` — always prints to stderr; always logs
-- `out.raw(s)` — always prints (for JSON / cat output)
-- `out.dry(s)` — prints `[dry-run] …` unless quiet
+- `out.println(s)` - prints unless quiet; always logs to file
+- `out.eprintln(s)` - always prints to stderr; always logs
+- `out.raw(s)` - always prints (for JSON / cat output)
+- `out.dry(s)` - prints `[dry-run] …` unless quiet
 
 This ensures `--quiet`, `--log-file`, and `--json` work consistently across every command.
 
 ### Blake3 Index Seal
 
-After writing `index.arc.json`, the Blake3 hash of its content is written to `index.arc.json.b3`. Before any verify or restore operation, this seal is checked. Any modification of the index — even a single byte — is detected immediately.
+After writing `index.arc.json`, the Blake3 hash of its content is written to `index.arc.json.b3`. Before any verify or restore operation, this seal is checked. Any modification of the index - even a single byte - is detected immediately.
 
 ### Deduplication
 

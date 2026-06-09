@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! Output context — respects --quiet, --json, and --log-file flags.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use std::fs::{File, OpenOptions};
 use std::io::Write;
@@ -26,7 +22,6 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 
-/// Shared output context passed through all commands.
 #[derive(Clone)]
 pub struct OutputCtx {
     pub json: bool,
@@ -55,7 +50,6 @@ impl OutputCtx {
         })
     }
 
-    /// Print a line to stdout (unless quiet), and also to log file (no ANSI).
     pub fn println(&self, line: &str) {
         if !self.quiet {
             println!("{}", line);
@@ -63,13 +57,11 @@ impl OutputCtx {
         self.write_log(line);
     }
 
-    /// Always print to stderr + log file.
     pub fn eprintln(&self, line: &str) {
         eprintln!("{}", line);
         self.write_log(&format!("ERROR: {}", line));
     }
 
-    /// Print a "dry-run would do X" message.
     pub fn dry(&self, line: &str) {
         if !self.quiet {
             println!("[dry-run] {}", line);
@@ -85,19 +77,17 @@ impl OutputCtx {
         }
     }
 
-    /// Print a raw string to stdout regardless of quiet mode (for JSON / cat output).
+    // for JSON / cat output -- bypasses quiet mode
     pub fn raw(&self, s: &str) {
         print!("{}", s);
     }
 }
 
-/// Remove ANSI escape sequences for clean log output.
 fn strip_ansi(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     let mut chars = s.chars().peekable();
     while let Some(c) = chars.next() {
         if c == '\x1b' {
-            // consume until 'm'
             while let Some(&next) = chars.peek() {
                 chars.next();
                 if next == 'm' {

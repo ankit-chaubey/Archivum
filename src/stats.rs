@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! `stats` — detailed archive statistics: per-extension, part sizes, ratios.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::Result;
 use colored::Colorize;
@@ -35,8 +31,8 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
     let index_dir = index_path.parent().unwrap_or(Path::new("."));
     let ext = h.compression.extension();
 
-    // ── Extension breakdown ────────────────────────────────────────────────
-    let mut ext_map: HashMap<String, (u64, u64)> = HashMap::new(); // ext → (count, bytes)
+    // count files per extension
+    let mut ext_map: HashMap<String, (u64, u64)> = HashMap::new();
     for e in idx
         .entries
         .iter()
@@ -53,9 +49,9 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
     }
     let mut ext_vec: Vec<(String, u64, u64)> =
         ext_map.into_iter().map(|(k, (c, b))| (k, c, b)).collect();
-    ext_vec.sort_by(|a, b| b.2.cmp(&a.2)); // sort by bytes desc
+    ext_vec.sort_by(|a, b| b.2.cmp(&a.2));
 
-    // ── Part sizes (on disk) ───────────────────────────────────────────────
+    // actual on-disk sizes
     let mut part_sizes: Vec<(u32, u64)> = vec![];
     let mut total_on_disk: u64 = 0;
     for part in 0..h.total_parts {
@@ -65,7 +61,6 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
         part_sizes.push((part, size));
     }
 
-    // ── Compression ratio ──────────────────────────────────────────────────
     let ratio = if total_on_disk > 0 {
         h.total_size as f64 / total_on_disk as f64
     } else {
@@ -77,7 +72,6 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
         0.0
     };
 
-    // ── Dedup savings ─────────────────────────────────────────────────────
     let dedup_count = idx.entries.iter().filter(|e| e.dedup_of.is_some()).count();
     let dedup_bytes: u64 = idx
         .entries
@@ -110,10 +104,7 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
             }).collect::<Vec<_>>()
         });
         out.raw(&serde_json::to_string_pretty(&result).unwrap());
-        out.raw(
-            "
-",
-        );
+        out.raw("\n");
         return Ok(());
     }
 
@@ -145,7 +136,6 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
         ));
     }
 
-    // Parts table
     out.println("");
     out.println(&format!(
         "  {} ({} parts)",
@@ -154,7 +144,7 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
     ));
     for (part, size) in &part_sizes {
         let path = index_dir.join(format!("data.part{:03}{}", part, ext));
-        let exists = if path.exists() { "✓" } else { "✗" };
+        let exists = if path.exists() { "v" } else { "x" };
         out.println(&format!(
             "    {} part{:03}  {}",
             exists,
@@ -163,7 +153,6 @@ pub fn stats(index_path: &Path, out: &OutputCtx) -> Result<()> {
         ));
     }
 
-    // Extension table (top 15)
     out.println("");
     out.println(&format!("  {}", "Top file types by size:".cyan().bold()));
     out.println(&format!(

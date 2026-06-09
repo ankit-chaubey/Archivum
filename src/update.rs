@@ -1,26 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! `update` — incremental archive: only re-archive new/changed files.
-//!
-//! Unchanged files remain in the old parts (referenced via part_bases).
-//! Only changed/new files are written to new parts in the output directory.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::{Context, Result};
 use colored::Colorize;
@@ -51,7 +44,7 @@ pub fn update(
     out: &OutputCtx,
 ) -> Result<()> {
     out.println(&format!(
-        "{} {} → {}",
+        "{} {} -> {}",
         "Incremental update:".cyan().bold(),
         source.display().to_string().yellow(),
         output_dir.display().to_string().yellow()
@@ -62,7 +55,6 @@ pub fn update(
         .with_context(|| format!("Cannot read old index: {}", old_index_path.display()))?;
     let old_index_dir = old_index_path.parent().unwrap_or(Path::new("."));
 
-    // ── Build a map of old entries by path ────────────────────────────────
     let old_map: HashMap<&Path, &IndexEntry> = old_idx
         .entries
         .iter()
@@ -70,11 +62,9 @@ pub fn update(
         .map(|e| (e.path.as_path(), e))
         .collect();
 
-    // ── Scan source ────────────────────────────────────────────────────────
     let scan = scan_directory(source, exclude)
         .with_context(|| format!("Failed to scan {}", source.display()))?;
 
-    // ── Classify each file ────────────────────────────────────────────────
     let mut unchanged: Vec<IndexEntry> = vec![];
     let mut changed_paths: Vec<PathBuf> = vec![];
     let mut new_paths: Vec<PathBuf> = vec![];
@@ -88,9 +78,8 @@ pub fn update(
             let mtime_match = se.mtime == old_entry.mtime;
 
             let is_unchanged = if use_checksum && old_entry.sha256.is_some() {
-                // Full checksum comparison
                 if size_match && mtime_match {
-                    // Optimization: if size+mtime match, assume unchanged
+                    // size+mtime match: assume unchanged, skip the expensive hash
                     true
                 } else {
                     let actual = hash_file(&source.join(&se.relative_path)).unwrap_or_default();
@@ -110,7 +99,6 @@ pub fn update(
         }
     }
 
-    // Report
     out.println(&format!(
         "  Unchanged: {}  Changed: {}  New: {}  (source total: {} files)",
         unchanged.len().to_string().green(),
@@ -135,7 +123,6 @@ pub fn update(
     std::fs::create_dir_all(output_dir)
         .with_context(|| format!("Cannot create output dir {}", output_dir.display()))?;
 
-    // ── Build a new scan for only changed+new files ────────────────────────
     let need_rearchive: std::collections::HashSet<&Path> = changed_paths
         .iter()
         .chain(new_paths.iter())
@@ -159,12 +146,9 @@ pub fn update(
         human(delta_size)
     ));
 
-    // ── Compute checksums for delta files ─────────────────────────────────
     let mut delta_idx = ArchivumIndex::build(delta_scan, algo.clone(), zstd_level);
     compute_checksums(source, &mut delta_idx, threads)?;
 
-    // ── Write new delta parts ─────────────────────────────────────────────
-    // Old parts stay in old_index_dir; new parts go to output_dir
     write_archive(
         source,
         output_dir,
@@ -175,32 +159,26 @@ pub fn update(
         zstd_level,
     )?;
 
-    // ── Build merged index ────────────────────────────────────────────────
-    // part_bases[0] = "" (output_dir itself, for new parts)
-    // part_bases[1] = relative path from output_dir to old_index_dir (for old parts)
+    // part_bases[0] = output_dir (new parts), part_bases[1] = old dir (old parts)
     let old_rel = relative_path(output_dir, old_index_dir);
 
     let mut all_entries: Vec<IndexEntry> = vec![];
 
-    // Unchanged: re-point to old base (index 1)
     for mut e in unchanged {
         e.tar_base = Some(1);
         all_entries.push(e);
     }
 
-    // Delta entries: stay in base 0 (output_dir)
     for e in delta_idx.entries {
         all_entries.push(e);
     }
 
-    // Non-file entries from original index (dirs, symlinks)
     for e in &old_idx.entries {
         if e.entry_type != EntryType::File {
             all_entries.push(e.clone());
         }
     }
 
-    // Dedup-of: rebuild from delta (new files only)
     let mut total_files = 0u64;
     let mut total_dirs = 0u64;
     let mut total_symlinks = 0u64;
@@ -253,9 +231,7 @@ pub fn update(
     Ok(())
 }
 
-/// Compute a relative path from `base` to `target`.
 fn relative_path(base: &Path, target: &Path) -> PathBuf {
-    // Attempt simple relative computation
     let base_abs = base.canonicalize().unwrap_or_else(|_| base.to_path_buf());
     let target_abs = target
         .canonicalize()

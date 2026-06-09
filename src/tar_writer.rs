@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! Writes source files into split, optionally compressed tar parts.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::{Context, Result};
 use colored::Colorize;
@@ -44,7 +40,7 @@ pub fn write_archive(
     let total_bytes: u64 = idx.header.total_size;
     let ext = algo.extension();
 
-    // Pass 1: assign each file to a tar part (respecting split_bytes and split_files)
+    // pass 1: assign each file to a part
     let mut current_part: u32 = 0;
     let mut current_size: u64 = 0;
     let mut current_file_count: usize = 0;
@@ -61,7 +57,6 @@ pub fn write_archive(
         let size = idx.entries[ei].size;
         let overhead = 512 + size.div_ceil(512) * 512;
 
-        // Check split conditions
         let byte_overflow = current_size > 0 && current_size + overhead > split_bytes;
         let file_overflow = split_files > 0 && current_file_count >= split_files;
 
@@ -87,7 +82,7 @@ pub fn write_archive(
         return Ok(());
     }
 
-    // Pass 2: write each part
+    // pass 2: write each part
     let pb = ProgressBar::new(total_bytes);
     pb.set_style(
         ProgressStyle::with_template(

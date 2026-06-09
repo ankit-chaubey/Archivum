@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! Restore archives to disk — with path-traversal protection and dry-run support.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::{Context, Result};
 use colored::Colorize;
@@ -34,11 +30,7 @@ use crate::output::OutputCtx;
 use crate::scan::EntryType;
 use crate::utils::human;
 
-// ─── Path traversal guard ──────────────────────────────────────────────────
-
-/// Ensure `path` does not escape `base` (no `..` components, absolute paths, etc.)
 fn safe_join(base: &Path, path: &Path) -> Result<PathBuf> {
-    // Reject absolute paths in the archive
     if path.is_absolute() {
         anyhow::bail!(
             "Path traversal blocked: archive entry is absolute: {}",
@@ -46,7 +38,6 @@ fn safe_join(base: &Path, path: &Path) -> Result<PathBuf> {
         );
     }
 
-    // Reject any `..` components
     for component in path.components() {
         if matches!(component, Component::ParentDir) {
             anyhow::bail!(
@@ -58,12 +49,10 @@ fn safe_join(base: &Path, path: &Path) -> Result<PathBuf> {
 
     let full = base.join(path);
 
-    // Final canonicalization check (requires base to exist)
     if base.exists() {
         let canon_base = base
             .canonicalize()
             .with_context(|| format!("Cannot canonicalize base {}", base.display()))?;
-        // We can't canonicalize full yet (it may not exist), so check the parent
         if let Some(parent) = full.parent() {
             if parent.exists() {
                 let canon_parent = parent.canonicalize()?;
@@ -79,8 +68,6 @@ fn safe_join(base: &Path, path: &Path) -> Result<PathBuf> {
 
     Ok(full)
 }
-
-// ─── Restore ───────────────────────────────────────────────────────────────
 
 pub fn restore(
     index_path: &Path,
@@ -111,7 +98,7 @@ pub fn restore(
             .with_context(|| format!("Cannot create target dir {}", target.display()))?;
     }
 
-    // ── Pass 1: directories ────────────────────────────────────────────────
+    // pass 1: directories
     for entry in &idx.entries {
         if entry.entry_type != EntryType::Directory {
             continue;
@@ -131,7 +118,7 @@ pub fn restore(
         }
     }
 
-    // ── Pass 2: symlinks ───────────────────────────────────────────────────
+    // pass 2: symlinks
     for entry in &idx.entries {
         if entry.entry_type != EntryType::Symlink {
             continue;
@@ -169,10 +156,8 @@ pub fn restore(
         }
     }
 
-    // ── Pass 3: deduped files (copy from first occurrence) ────────────────
-    let mut dedup_done: HashMap<PathBuf, PathBuf> = HashMap::new(); // original_path → restored_path
-
-    // ── Pass 4: regular files, grouped by tar_part ────────────────────────
+    // pass 3: regular files, grouped by tar_part
+    let mut dedup_done: HashMap<PathBuf, PathBuf> = HashMap::new();
     let mut by_part: HashMap<u32, Vec<&IndexEntry>> = HashMap::new();
     for entry in &idx.entries {
         if entry.entry_type != EntryType::File {
@@ -182,7 +167,7 @@ pub fn restore(
             continue;
         }
         if entry.dedup_of.is_some() {
-            continue; // handled after extraction
+            continue;
         }
         by_part.entry(entry.tar_part).or_default().push(entry);
     }
@@ -286,7 +271,7 @@ pub fn restore(
         human(total_bytes)
     ));
 
-    // ── Pass 5: restore deduped files by copying ───────────────────────────
+    // pass 4: deduped files - copy from already-restored originals
     let dedup_entries: Vec<&IndexEntry> = idx
         .entries
         .iter()
@@ -329,8 +314,6 @@ pub fn restore(
     Ok(())
 }
 
-// ─── Extract single file ───────────────────────────────────────────────────
-
 pub fn extract_single(
     idx: &ArchivumIndex,
     index_dir: &Path,
@@ -348,7 +331,7 @@ pub fn extract_single(
         anyhow::bail!("Entry is not a regular file: {}", file.display());
     }
 
-    // Handle dedup: extract from original
+    // deduped: extract from original
     let (target_path, target_entry) = if let Some(ref orig) = entry.dedup_of {
         let orig_entry = idx
             .entries
@@ -405,8 +388,6 @@ pub fn extract_single(
 
     anyhow::bail!("File not found in tar part: {}", file.display());
 }
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
 
 fn build_filter(pattern: Option<&str>) -> Result<Option<GlobSet>> {
     match pattern {

@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! ~/.config/archivum/config.toml — user-controlled defaults and preferences.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::{Context, Result};
 use colored::Colorize;
@@ -25,8 +21,6 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
-
-// ─── Config structs ────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -40,61 +34,48 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DefaultsConfig {
-    /// Default compression algorithm: none | gzip | bzip2 | lz4 | zstd
+    /// none | gzip | bzip2 | lz4 | zstd
     pub compress: String,
-    /// Zstd compression level (1–22)
+    /// 1-22
     pub zstd_level: i32,
-    /// Max size per archive part in GB
     pub split_gb: f64,
-    /// Max files per part (0 = disabled, use split_gb)
+    /// 0 = disabled, use split_gb instead
     pub split_files: usize,
-    /// Parallel checksum threads
     pub threads: usize,
-    /// Enable colored terminal output
     pub color: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateConfig {
-    /// Default glob exclude patterns
     pub exclude: Vec<String>,
-    /// Enable deduplication by SHA-256
     pub dedup: bool,
-    /// Optional notes/description stored in the index
     pub notes: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RestoreConfig {
-    /// Overwrite existing files on restore
     pub force: bool,
-    /// Restore Unix file permissions
     pub restore_permissions: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateConfig {
-    /// Use full SHA-256 comparison (not just mtime+size) to detect changes
+    /// full sha256 diff vs mtime+size only
     pub checksum_diff: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OutputConfig {
-    /// Output JSON instead of human-readable text
     pub json: bool,
-    /// Suppress non-error output
     pub quiet: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PruneConfig {
-    /// Always keep at least this many archives
     pub keep_last: usize,
-    /// Delete archives older than N days (0 = disabled)
+    /// 0 = disabled
     pub max_age_days: u64,
 }
-
-// ─── Defaults ──────────────────────────────────────────────────────────────
 
 impl Default for Config {
     fn default() -> Self {
@@ -136,14 +117,11 @@ impl Default for Config {
     }
 }
 
-// ─── Load / Save ───────────────────────────────────────────────────────────
-
 pub fn config_path() -> Option<PathBuf> {
     dirs::config_dir().map(|d| d.join("archivum").join("config.toml"))
 }
 
 impl Config {
-    /// Load config from disk, creating defaults if missing.
     pub fn load() -> Self {
         if let Some(path) = config_path() {
             if path.exists() {
@@ -171,7 +149,6 @@ impl Config {
         Ok(cfg)
     }
 
-    /// Write config to disk.
     pub fn save(&self) -> Result<()> {
         if let Some(path) = config_path() {
             if let Some(parent) = path.parent() {
@@ -192,7 +169,6 @@ impl Config {
         Ok(())
     }
 
-    /// Interactive setup — prompts user for each field.
     pub fn setup_interactive() -> Result<()> {
         let mut cfg = Config::load();
 
@@ -204,13 +180,11 @@ impl Config {
         );
         println!("{}", "─".repeat(60).dimmed());
 
-        // ── Compression
         cfg.defaults.compress = prompt(
             "Default compression (none/gzip/bzip2/lz4/zstd)",
             &cfg.defaults.compress,
         )?;
 
-        // ── Zstd level
         if cfg.defaults.compress == "zstd" {
             let level_str = prompt(
                 "Zstd compression level (1-22, higher=smaller/slower)",
@@ -221,7 +195,6 @@ impl Config {
             }
         }
 
-        // ── Split size
         let split_str = prompt(
             "Max archive part size in GB",
             &cfg.defaults.split_gb.to_string(),
@@ -230,7 +203,6 @@ impl Config {
             cfg.defaults.split_gb = v;
         }
 
-        // ── Threads
         let threads_str = prompt(
             "Parallel checksum threads",
             &cfg.defaults.threads.to_string(),
@@ -239,17 +211,14 @@ impl Config {
             cfg.defaults.threads = v.max(1);
         }
 
-        // ── Dedup
         let dedup_str = prompt(
             "Enable deduplication by default (true/false)",
             &cfg.create.dedup.to_string(),
         )?;
         cfg.create.dedup = dedup_str.eq_ignore_ascii_case("true") || dedup_str == "1";
 
-        // ── Exclude patterns
         println!(
-            "
-  {} (current: {})",
+            "\n  {} (current: {})",
             "Default exclude patterns (comma-separated globs):".cyan(),
             cfg.create.exclude.join(", ").yellow()
         );
@@ -258,14 +227,12 @@ impl Config {
             cfg.create.exclude = excl.split(',').map(|s| s.trim().to_string()).collect();
         }
 
-        // ── Restore permissions
         let perm_str = prompt(
             "Restore Unix permissions by default (true/false)",
             &cfg.restore.restore_permissions.to_string(),
         )?;
         cfg.restore.restore_permissions = perm_str.eq_ignore_ascii_case("true") || perm_str == "1";
 
-        // ── Prune keep
         let keep_str = prompt(
             "Minimum archives to keep during prune",
             &cfg.prune.keep_last.to_string(),
@@ -274,7 +241,6 @@ impl Config {
             cfg.prune.keep_last = v.max(1);
         }
 
-        // ── Prune age
         let age_str = prompt(
             "Max age (days) for prune (0 = disable age pruning)",
             &cfg.prune.max_age_days.to_string(),
@@ -290,7 +256,6 @@ impl Config {
         Ok(())
     }
 
-    /// Print current config in a readable table.
     pub fn print(&self) {
         println!("{}", "─".repeat(60).dimmed());
         println!("{}", "  Current Configuration".cyan().bold());
@@ -366,8 +331,6 @@ impl Config {
         println!("{}", "─".repeat(60).dimmed());
     }
 }
-
-// ─── Prompt helper ─────────────────────────────────────────────────────────
 
 fn prompt(label: &str, current: &str) -> Result<String> {
     print!("  {} [{}]: ", label.cyan(), current.yellow());

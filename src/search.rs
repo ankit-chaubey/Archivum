@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! `search` — search the index by glob or substring.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::Result;
 use colored::Colorize;
@@ -31,7 +27,7 @@ use crate::utils::human;
 pub fn search(index_path: &Path, pattern: &str, out: &OutputCtx) -> Result<()> {
     let idx = ArchivumIndex::read(index_path)?;
 
-    // Only treat as glob if pattern contains glob metacharacters; otherwise use substring
+    // glob if it has metacharacters, substring otherwise
     let is_glob = pattern.contains('*') || pattern.contains('?') || pattern.contains('[');
     let globset: Option<GlobSet> = if is_glob {
         Glob::new(pattern).ok().and_then(|g| {
@@ -69,15 +65,12 @@ pub fn search(index_path: &Path, pattern: &str, out: &OutputCtx) -> Result<()> {
             })
             .collect();
         out.raw(&serde_json::to_string_pretty(&json_matches).unwrap());
-        out.raw(
-            "
-",
-        );
+        out.raw("\n");
         return Ok(());
     }
 
     out.println(&format!(
-        "{} '{}' in {} — {} match(es)",
+        "{} '{}' in {} - {} match(es)",
         "Search:".cyan().bold(),
         pattern.yellow(),
         index_path.display().to_string().dimmed(),

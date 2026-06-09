@@ -1,4 +1,4 @@
-# Archivum — Index Format Reference
+# Archivum - Index Format Reference
 
 The `index.arc.json` file is the heart of every Archivum archive. It is a human-readable JSON file containing all metadata, checksums, and structural information needed to list, verify, restore, or search an archive.
 

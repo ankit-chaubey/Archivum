@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! `repair` — rebuild a missing or corrupt index.arc.json from tar parts.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::{Context, Result};
 use colored::Colorize;
@@ -43,30 +39,7 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
     out.println(&format!("  Compression: {}", algo.name().green()));
     out.println("");
 
-    // ── Find all part files ────────────────────────────────────────────────
-    let mut part_files: Vec<(u32, std::path::PathBuf)> = vec![];
-    for entry in fs::read_dir(archive_dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        let name = path
-            .file_name()
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string();
-        if name.starts_with("data.part") && name.ends_with(ext.trim_start_matches('.')) {
-            // Parse part number
-            let num_str = name
-                .trim_start_matches("data.part")
-                .trim_end_matches(ext.trim_start_matches('.'));
-            // Handle the extra '.' in the extension
-            let num_str = num_str.trim_end_matches('.');
-            if let Ok(n) = num_str.parse::<u32>() {
-                part_files.push((n, path));
-            }
-        }
-    }
-
-    // Handle extension correctly
+    // find all data.part### files
     let mut found_parts: Vec<(u32, std::path::PathBuf)> = vec![];
     for entry in fs::read_dir(archive_dir)? {
         let entry = entry?;
@@ -77,7 +50,6 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
             .to_string_lossy()
             .to_string();
 
-        // Match pattern: data.part###<ext>
         if let Some(rest) = name.strip_prefix("data.part") {
             if name.ends_with(ext) {
                 let num_part = rest.trim_end_matches(ext.trim_start_matches('.'));
@@ -89,7 +61,6 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
         }
     }
 
-    let _ = part_files; // suppress unused warning
     found_parts.sort_by_key(|(n, _)| *n);
 
     if found_parts.is_empty() {
@@ -102,7 +73,6 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
 
     out.println(&format!("  Found {} part(s)", found_parts.len()));
 
-    // ── Scan each part and collect entries ────────────────────────────────
     let mut entries: Vec<IndexEntry> = vec![];
     let mut total_files = 0u64;
     let mut total_size = 0u64;
@@ -162,7 +132,7 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
                 size,
                 mtime,
                 unix_mode: mode,
-                sha256: None, // can't recover checksums without source
+                sha256: None, // can't recover without source
                 tar_part: *part_num,
                 symlink_target,
                 tar_base: None,
@@ -179,7 +149,6 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
     out.println("  Note: SHA-256 checksums cannot be recovered without the source.");
     out.println("");
 
-    // ── Build new index ────────────────────────────────────────────────────
     let ts = now();
     let idx = ArchivumIndex {
         header: IndexHeader {
@@ -199,7 +168,7 @@ pub fn repair(archive_dir: &Path, compression: &str, out: &OutputCtx) -> Result<
             total_parts: found_parts.last().map(|(n, _)| n + 1).unwrap_or(0),
             compression: algo,
             zstd_level: 3,
-            notes: "Repaired index — checksums not available".into(),
+            notes: "Repaired index - checksums not available".into(),
             part_bases: vec![String::new()],
             _integrity: None,
         },

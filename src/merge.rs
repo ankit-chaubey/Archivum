@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! `merge` — combine multiple archives into a single new archive.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::{Context, Result};
 use colored::Colorize;
@@ -31,8 +27,6 @@ use crate::index::{ArchivumIndex, IndexEntry, IndexHeader, INDEX_VERSION};
 use crate::output::OutputCtx;
 use crate::scan::EntryType;
 use crate::utils::{fmt_time, now};
-
-// ─── A self-contained part writer that owns its builder+writer ────────────
 
 struct PartWriter {
     builder: tar::Builder<Box<dyn io::Write>>,
@@ -58,8 +52,6 @@ impl PartWriter {
     }
 }
 
-// ─── Main merge function ──────────────────────────────────────────────────
-
 pub fn merge(
     index_paths: &[PathBuf],
     output_dir: &Path,
@@ -69,7 +61,7 @@ pub fn merge(
     out: &OutputCtx,
 ) -> Result<()> {
     out.println(&format!(
-        "{} {} archives → {}",
+        "{} {} archives -> {}",
         "Merging:".cyan().bold(),
         index_paths.len().to_string().yellow(),
         output_dir.display().to_string().yellow()
@@ -87,7 +79,7 @@ pub fn merge(
     fs::create_dir_all(output_dir)
         .with_context(|| format!("Cannot create output dir {}", output_dir.display()))?;
 
-    // ── Collect all entries, deduplicating by path ────────────────────────
+    // collect all entries, skip duplicates by path
     let mut work_list: Vec<(PathBuf, IndexEntry)> = vec![];
     let mut seen_paths: HashSet<PathBuf> = HashSet::new();
     let mut total_skipped = 0usize;
@@ -125,12 +117,10 @@ pub fn merge(
     }
 
     out.println(&format!(
-        "
-  Merging {} unique files...",
+        "\n  Merging {} unique files...",
         work_list.len().to_string().cyan()
     ));
 
-    // ── Write merged archive parts ────────────────────────────────────────
     let ext = algo.extension();
     let mut current_part: u32 = 0;
     let mut new_entries: Vec<IndexEntry> = vec![];
@@ -139,7 +129,6 @@ pub fn merge(
     let mut pw = PartWriter::open(&first_path, algo, zstd_level)?;
 
     for (src_dir, mut entry) in work_list {
-        // Locate the source tar part
         let src_part_path = src_dir.join(format!(
             "data.part{:03}{}",
             entry.tar_part,
@@ -148,7 +137,6 @@ pub fn merge(
 
         let overhead = 512 + entry.size.div_ceil(512) * 512;
 
-        // Rotate to new part if needed
         if pw.current_size > 0 && pw.current_size + overhead > split_bytes {
             pw.finish()?;
             current_part += 1;
@@ -156,7 +144,6 @@ pub fn merge(
             pw = PartWriter::open(&next_path, algo, zstd_level)?;
         }
 
-        // Extract from old archive and write to new builder
         if let Ok(reader) = algo.wrap_reader(&src_part_path) {
             let mut src_archive = tar::Archive::new(reader);
             if let Ok(entries_iter) = src_archive.entries() {
@@ -229,8 +216,7 @@ pub fn merge(
     merged_idx.write(&index_path)?;
 
     out.println(&format!(
-        "
-  {} {}",
+        "\n  {} {}",
         "Merged index written to:".green().bold(),
         index_path.display().to_string().yellow()
     ));

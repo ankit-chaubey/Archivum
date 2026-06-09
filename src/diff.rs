@@ -1,23 +1,19 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Archivum v0.2.0
-// Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-// github.com/ankit-chaubey
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// All rights reserved 2026.
-// ─────────────────────────────────────────────────────────────────────────────
-//! Diff an archive against a source directory — detects drift.
+/*
+ * Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
+ * github.com/ankit-chaubey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use anyhow::Result;
 use colored::Colorize;
@@ -69,7 +65,7 @@ pub fn diff(
 
     let mut added: Vec<(PathBuf, u64)> = vec![];
     let mut removed: Vec<PathBuf> = vec![];
-    let mut modified: Vec<(PathBuf, String)> = vec![]; // (path, reason)
+    let mut modified: Vec<(PathBuf, String)> = vec![];
     let mut unchanged = 0usize;
 
     for (&path, se) in &current_map {
@@ -79,13 +75,12 @@ pub fn diff(
 
             if size_changed || mtime_changed {
                 let reason = if size_changed {
-                    format!("size {} → {}", human(ae.size), human(se.size))
+                    format!("size {} -> {}", human(ae.size), human(se.size))
                 } else {
                     "mtime changed".to_string()
                 };
                 modified.push((path.to_path_buf(), reason));
             } else if use_checksum {
-                // Extra: compare by SHA-256 even if size/mtime match
                 let full_path = source.join(path);
                 match hash_file(&full_path) {
                     Ok(actual_hash) => {
@@ -94,7 +89,7 @@ pub fn diff(
                             modified.push((
                                 path.to_path_buf(),
                                 format!(
-                                    "checksum mismatch ({}… vs {}…)",
+                                    "checksum mismatch ({}... vs {}...)",
                                     &stored[..8],
                                     &actual_hash[..8]
                                 ),
@@ -103,7 +98,7 @@ pub fn diff(
                             unchanged += 1;
                         }
                     }
-                    Err(_) => unchanged += 1, // file unreadable — skip
+                    Err(_) => unchanged += 1,
                 }
             } else {
                 unchanged += 1;
@@ -127,10 +122,7 @@ pub fn diff(
             "unchanged": unchanged
         });
         out.raw(&serde_json::to_string_pretty(&result).unwrap());
-        out.raw(
-            "
-",
-        );
+        out.raw("\n");
         return Ok(());
     }
 
@@ -159,7 +151,7 @@ pub fn diff(
     }
     for (path, reason) in &modified {
         out.println(&format!(
-            "  {} {} — {}",
+            "  {} {} - {}",
             "~ MODIFIED".yellow().bold(),
             path.display(),
             reason.dimmed()

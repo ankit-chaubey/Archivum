@@ -1,9 +1,3 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Archivum — Security Audit Workflow
-# Copyright 2026 Ankit Chaubey <ankitchaubey.dev@gmail.com>
-# Apache License 2.0
-# ─────────────────────────────────────────────────────────────────────────────
-
 name: Security Audit
 
 on:

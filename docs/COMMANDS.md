@@ -1,4 +1,4 @@
-# Archivum — Command Reference
+# Archivum - Command Reference
 
 > Full reference for every `archivum` subcommand.
 
@@ -12,7 +12,7 @@ These apply to **every** command:
 |------|-------------|
 | `--quiet` | Suppress all stdout output (errors still go to stderr) |
 | `--json` | Output machine-readable JSON |
-| `--dry-run` | Simulate — nothing is written to disk |
+| `--dry-run` | Simulate - nothing is written to disk |
 | `--log-file <PATH>` | Append all output (no ANSI colour) to a file |
 | `-h, --help` | Show help |
 | `-V, --version` | Show version |
@@ -42,13 +42,13 @@ archivum create <SOURCE> <o> [OPTIONS]
 | `--zstd-level` | 1–22 | `3` | Zstd compression level |
 | `--split-gb` | float | `4.0` | Max size per part in GB |
 | `--split-files` | int | `0` | Max files per part (0 = unlimited) |
-| `--exclude` | glob | — | Exclude pattern (repeatable) |
+| `--exclude` | glob | - | Exclude pattern (repeatable) |
 | `--dedup` | flag | off | Skip files with duplicate SHA-256 |
-| `--notes` | string | — | Attach a note to the archive header |
+| `--notes` | string | - | Attach a note to the archive header |
 | `--threads` | int | `4` | Checksum thread count |
 | `--dry-run` | flag | off | Simulate without writing |
 | `--quiet` | flag | off | Suppress output |
-| `--log-file` | path | — | Log file path |
+| `--log-file` | path | - | Log file path |
 
 ### Output
 
@@ -136,9 +136,9 @@ archivum diff <INDEX> <SOURCE> [OPTIONS]
 | `--json` | Output as JSON |
 
 Status codes in output:
-- `+` ADDED — file exists in source but not in archive
-- `-` REMOVED — file in archive but not in source
-- `~` MODIFIED — size or mtime differ (or SHA-256 if `--checksum`)
+- `+` ADDED - file exists in source but not in archive
+- `-` REMOVED - file in archive but not in source
+- `~` MODIFIED - size or mtime differ (or SHA-256 if `--checksum`)
 - `·` UNCHANGED
 
 ---
@@ -233,7 +233,7 @@ archivum cat ./backup/index.arc.json data.csv | python3 process.py
 
 ## `update`
 
-Incremental update — only re-archives new or modified files.
+Incremental update - only re-archives new or modified files.
 
 ```
 archivum update <OLD_INDEX> <SOURCE> <o> [OPTIONS]
