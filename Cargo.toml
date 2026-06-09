@@ -1,7 +1,7 @@
 [package]
 name         = "archivum"
 version      = "0.3.0"
-edition      = "2021"
+edition      = "2024"
 license      = "Apache-2.0"
 authors      = ["Ankit Chaubey <ankitchaubey.dev@gmail.com>"]
 description  = "TAR archiver with SHA-256 checksums, split parts, and incremental updates."
